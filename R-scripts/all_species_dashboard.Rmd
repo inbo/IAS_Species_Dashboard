@@ -21,6 +21,8 @@ require(leaflet.extras)
 require(kableExtra)
 require(kable)
 require(flexdashboard)
+require(inborutils)
+require(rgbif)
 
 bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
@@ -353,6 +355,50 @@ renderTable({
 
 TrIAS Grafieken 
 ==========================================
+
+```{r setup TrIAS, include=FALSE}
+if (!"be_species_cube.csv" %in%
+  list.files(here::here("Data", "Interim"))) {
+  download_zenodo(
+    doi = "10.5281/zenodo.3637911",
+    path = here::here("Data", "Interim")
+  )
+}
+
+be_species_cube <- read_csv(
+  file = here::here("Data", "Interim", "be_species_cube.csv"),
+  na = ""
+)
+be_species_info <- read_csv(
+  file = here::here("Data", "Interim", "be_species_info.csv"),
+  na = ""
+)
+
+if (!"be_alientaxa_cube.csv" %in%
+  list.files(here::here("Data", "Interim"))) {
+  download_zenodo(
+    doi = "10.5281/zenodo.3635510",
+    path = here::here("Data", "Interim")
+  )
+}
+
+
+be_alientaxa_cube <- read_csv(
+  file = here::here("Data", "Interim", "be_alientaxa_cube.csv"),
+  na = ""
+)
+be_alientaxa_info <- read_csv(
+  file = here::here("Data", "Interim", "be_alientaxa_info.csv"),
+  na = ""
+)
+
+cells_of_prot_areas <- read_tsv(
+  file = "https://raw.githubusercontent.com/trias-project/indicators/master/data/interim/EEA_ref_grid_cells_covering_protected_areas.tsv"
+  ,
+  na = ""
+)
+```
+
 
 Row {data-height=50}
 ----------------------------------
