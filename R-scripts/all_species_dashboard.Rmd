@@ -103,7 +103,7 @@ Sidebar {.sidebar}
 Select a species from the dropdown
 
 ```{r create choiceslist, include=FALSE}
-spec_ind <- read_delim(here("r-scripts/docs/nameserver_species_identifiers_for_t0.csv"), 
+spec_ind <- read_delim(here("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv"), 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
                                                                     t1_from = col_date(format = "%d/%m/%Y"), 
