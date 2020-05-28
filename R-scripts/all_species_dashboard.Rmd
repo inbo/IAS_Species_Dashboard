@@ -1,0 +1,317 @@
+---
+title: "All_Species_Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    horizontal_layout: fill
+    
+    runtime: shiny
+---
+
+```{r setup, include=FALSE}
+require(tidyverse)
+require(shiny)
+require(here)
+require(sp)
+require(rgdal)
+require(leaflet)
+require(leafem)
+require(leaflet.extras)
+require(kableExtra)
+require(kable)
+require(flexdashboard)
+
+bioregions <- c("Continental", "Atlantic")
+ts <- c("t0", "t1")
+batches <- c("Batch1", "Batch2", "Batch3")
+```
+
+```{r create basemap, include=FALSE}
+crs_wgs <- CRS("+proj=longlat +datum=WGS84 +no_defs ")
+crs_bel <- CRS("+proj=lcc +lat_1=51.16666723333333 +lat_2=49.8333339 +lat_0=90 +lon_0=4.367486666666666 +x_0=150000.013 +y_0=5400088.438 +ellps=intl +towgs84=-106.869,52.2978,-103.724,0.3366,-0.457,1.8422,-1.2747 +units=m +no_defs ")
+
+bel_borders <- readOGR(here("../manageability/Input/Spatial"), "Belgie", stringsAsFactors = FALSE)
+proj4string(bel_borders) <- crs_bel
+
+bioreg_bel_clip <- readOGR(here("../manageability/Input/Spatial"), "bioreg_bel_clip", stringsAsFactors = FALSE)
+
+grid_pal <- colorFactor(palette = c("red", "black"), domain = utm_polygons$grid, levels = c("utm1", "utm5"))
+bioreg_pal <- colorFactor(palette = c("darkgrey", "white"), domain = bioreg_bel_clip$BIOGEO, levels = c("Continental", "Atlantic"))
+
+basemap <- leaflet(bioreg_bel_clip) %>% 
+  addTiles() %>% 
+  addPolygons(fillColor = ~bioreg_pal(BIOGEO),
+              fillOpacity = 0.5,
+              stroke = FALSE) %>% 
+  addPolylines(data = spTransform(bel_borders, crs_wgs),
+               color = "black",
+               opacity = 1,
+               weight = 2) %>% 
+  addScaleBar(position = "bottomleft") %>% 
+  addLogo(img = "https://cdn2.iconfinder.com/data/icons/map-and-navigation-12/48/57-512.png", src = "remote", position = "bottomright") %>% 
+  setMapWidgetStyle(list(background= "white"))
+```
+
+```{r get & merge utm_polygons, include=FALSE}
+utm_merged <- data.frame()
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("../manageability/Output/" , t, "_manageability_utmpolygons_", b, ".shp")
+    fn2 <- paste0( t, "_manageability_utmpolygons_", b)
+    if(file.exists(here(fn))){
+      temp_utm <- readOGR(here("../manageability/Output/"), fn2, stringsAsFactors = FALSE)
+      temp_utm$tx <- t
+      if(class(utm_merged) == "SpatialPolygonsDataFrame"){
+        utm_merged <- rbind.SpatialPolygonsDataFrame(utm_merged, temp_utm)
+      }else{
+        utm_merged <- temp_utm
+      }
+    }else{
+      next()
+    }
+  }
+}
+
+```
+
+```{r get & merge GridStats, include= FALSE}
+stats_merged <- data.frame()
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("../manageability/Output/" , t, "_manageability_GridStats_", b, ".csv")
+    fn2 <- paste0( t, "_manageability_utmpolygons_", b)
+    if(file.exists(here(fn))){
+      temp_stats <- read_delim(here(fn), delim = ";")
+        temp_stats$tx <- t
+      if(nrow(stats_merged) > 0){
+        stats_merged <- rbind.SpatialPolygonsDataFrame(stats_merged, temp_stats)
+      }else{
+        stats_merged <- temp_stats
+      }
+    }else{
+      next()
+    }
+  }
+}
+```
+
+
+Sidebar {.sidebar}
+==================================
+Select a species from the dropdown
+
+```{r create choiceslist, include=FALSE}
+spec_ind <- read_delim(here("r-scripts/docs/nameserver_species_identifiers_for_t0.csv"), 
+                       ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
+                                                                    t0_to = col_date(format = "%d/%m/%Y"), 
+                                                                    t1_from = col_date(format = "%d/%m/%Y"), 
+                                                                    t1_to = col_date(format = "%d/%m/%Y")), 
+                       trim_ws = TRUE)
+
+species_choices <- spec_ind %>% 
+  filter(!is.na(Batch)) %>% 
+  mutate(Species = case_when(grepl("Salvinia", gbifapi_acceptedScientificName) ~ "Salvinia auriculata Aubl.",
+                             TRUE ~ gbifapi_acceptedScientificName)) %>% 
+  distinct(Species) 
+
+species_choices$Species <- str_sort(species_choices$Species)
+
+spec_ind <- spec_ind %>% 
+  filter(!is.na(Batch))
+```
+
+```{r echo=FALSE}
+selectInput(inputId = "species", label = "Species dropdown", choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
+```
+
+```{r}
+renderText({print("")})
+renderText({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species) %>% 
+    distinct(gbifapi_acceptedKey, Batch, t0_from, t0_to)
+  
+  if(spec_ind_sub$Batch == 1){
+    batch <- paste0(spec_ind_sub$Batch, "st")
+  }
+  if(spec_ind_sub$Batch == 2){
+    batch <- paste0(spec_ind_sub$Batch, "nd")
+  }
+  if(spec_ind_sub$Batch == 3){
+    batch <- paste0(spec_ind_sub$Batch, "rd")
+  }
+  if(spec_ind_sub$Batch > 3 ){
+    batch <- paste0(spec_ind_sub$Batch, "th")
+  }
+  
+  text_general <- paste0(input$species, " was included into the European list with the ", batch, " batch on ",  spec_ind_sub$t0_to, ".") 
+  print(text_general)
+})
+renderText({print("")})
+```
+
+T0 - Baseline
+==========================================
+
+Row {data-height=50}
+----------------------------------
+
+```{r echo=FALSE}
+renderText({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species) %>% 
+    distinct(gbifapi_acceptedKey, Batch, t0_from, t0_to)
+  
+  text_t0 <- paste0("The graphs, tables and maps below contain observations from ", spec_ind_sub$t0_from, " to ",  spec_ind_sub$t0_to,".") 
+  print(text_t0)
+  
+})
+```
+
+Row {data-height=600}
+----------------------------------
+
+```{r}
+renderLeaflet({
+  utm_t0 <- subset(utm_merged, utm_merged$tx == "t0")
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species) %>% 
+    distinct(gbifapi_acceptedKey, Batch, t0_from, t0_to)
+  if(!is.na(spec_ind_sub$t0_from)){
+    utm_spec <- subset(utm_t0, utm_t0$species == input$species)
+    
+    t0_map <- basemap %>% 
+      addPolygons(data = utm_spec,
+                  color = ~grid_pal(grid),
+                  fill = FALSE,
+                  opacity = 1,
+                  weight = 1) %>% 
+      addLegend(data = utm_spec,
+                pal = grid_pal, 
+                values = ~grid,
+                position = "topright",
+                title = "legenda")
+    
+    print(t0_map)
+  }
+})
+```
+
+Row {data-height=200}
+----------------------------------
+
+### Stats
+
+```{r}
+renderText({"placeholder stats"})
+renderDataTable({
+  spec_stats <- stats_merged %>% 
+    filter(gbfp_SN == input$species & tx == "t0") 
+  
+  bioregion_test <- temp_stats %>% 
+    filter(bioregion %in% bioregions) 
+  
+  if(nrow(bioregion_test) < 2){
+    missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
+    temp_stats <- temp_stats %>% 
+      ungroup() %>% 
+      add_row(gbfp_SN = s, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+  }
+  
+  temp_stats_3 <- temp_stats  %>% 
+    ungroup() %>% 
+    filter(!is.na(bioregion)) %>% 
+    select(-gbfp_SN) %>% 
+    t()
+  
+  colnames(temp_stats_3) <- temp_stats_3[1,]
+  temp_stats_3 <- temp_stats_3[-1,]
+  temp_table <- temp_stats_3 %>% 
+    kable() %>%
+    kable_styling()
+  print(temp_table)
+})
+```
+
+
+T1 - Report
+==================================
+
+Row {data-height=50}
+----------------------------------
+
+```{r eval=TRUE}
+renderText({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species) %>% 
+    distinct(gbifapi_acceptedKey, Batch, t1_from, t1_to)
+  if(!is.na(spec_ind_sub$t1_from)){
+    text_t1 <- paste0("The graphs, tables and maps below contain observations from ", spec_ind_sub$t1_from, " to ",  spec_ind_sub$t1_to,".") 
+    print(text_t1)
+  }else{
+    text_t1_alt <- paste0(input$species, " hasn't been the subject of a t1 reporting cycle")
+    print(text_t1_alt)
+  }
+})
+```
+
+Row {data-height=650}
+----------------------------------
+
+```{r}
+renderLeaflet({
+  utm_t1 <- subset(utm_merged, utm_merged$tx == "t1")
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species) %>% 
+    distinct(gbifapi_acceptedKey, Batch, t1_from, t1_to)
+  if(!is.na(spec_ind_sub$t1_from)){
+    utm_spec <- subset(utm_t1, utm_t1$species == input$species)
+    
+    t1_map <- basemap %>% 
+      addPolygons(data = utm_spec,
+                  color = ~grid_pal(grid),
+                  fill = FALSE,
+                  opacity = 1,
+                  weight = 1) %>% 
+      addLegend(data = utm_spec,
+                pal = grid_pal, 
+                values = ~grid,
+                position = "topright",
+                title = "legenda")
+    
+    print(t1_map)
+  }
+})
+```
+
+Row {data-height=350}
+----------------------------------
+
+### Stats 
+
+```{r}
+renderText({"placeholder stats"})
+```
+
+TrIAS Grafieken 
+==========================================
+
+Row {data-height=50}
+----------------------------------
+
+### Occupancy
+
+### Occupancy Corrected
+
+
+Row {data-height=50}
+----------------------------------
+
+### Observations
+
+### Observations corrected
+
+About
+==========================================
