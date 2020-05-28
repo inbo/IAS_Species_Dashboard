@@ -22,7 +22,6 @@ require(kableExtra)
 require(kable)
 require(flexdashboard)
 require(inborutils)
-require(rgbif)
 
 bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
@@ -99,11 +98,6 @@ for(t in ts){
 }
 ```
 
-
-Sidebar {.sidebar}
-==================================
-Select a species from the dropdown
-
 ```{r create choiceslist, include=FALSE}
 spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
@@ -123,6 +117,16 @@ species_choices$Species <- str_sort(species_choices$Species)
 spec_ind <- spec_ind %>% 
   filter(!is.na(Batch))
 ```
+
+```{r setup TrIAS data, include=FALSE}
+df_timeseries <- read_tsv(here("Data",
+                    "Input",
+                    "df_timeseries.tsv"))
+```
+
+Sidebar {.sidebar}
+==================================
+Select a species from the dropdown
 
 ```{r echo=FALSE}
 selectInput(inputId = "species", label = "Species dropdown", choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
@@ -356,54 +360,25 @@ renderTable({
 TrIAS Grafieken 
 ==========================================
 
-```{r setup TrIAS, include=FALSE}
-if (!"be_species_cube.csv" %in%
-  list.files(here::here("Data", "Interim"))) {
-  download_zenodo(
-    doi = "10.5281/zenodo.3637911",
-    path = here::here("Data", "Interim")
-  )
-}
 
-be_species_cube <- read_csv(
-  file = here::here("Data", "Interim", "be_species_cube.csv"),
-  na = ""
-)
-be_species_info <- read_csv(
-  file = here::here("Data", "Interim", "be_species_info.csv"),
-  na = ""
-)
-
-if (!"be_alientaxa_cube.csv" %in%
-  list.files(here::here("Data", "Interim"))) {
-  download_zenodo(
-    doi = "10.5281/zenodo.3635510",
-    path = here::here("Data", "Interim")
-  )
-}
-
-
-be_alientaxa_cube <- read_csv(
-  file = here::here("Data", "Interim", "be_alientaxa_cube.csv"),
-  na = ""
-)
-be_alientaxa_info <- read_csv(
-  file = here::here("Data", "Interim", "be_alientaxa_info.csv"),
-  na = ""
-)
-
-cells_of_prot_areas <- read_tsv(
-  file = "https://raw.githubusercontent.com/trias-project/indicators/master/data/interim/EEA_ref_grid_cells_covering_protected_areas.tsv"
-  ,
-  na = ""
-)
-```
 
 
 Row {data-height=50}
 ----------------------------------
 
 ### Occupancy
+
+```{r}
+renderPrint({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  spec_cube <- df_timeseries %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey)
+  
+  print(spec_cube)
+})
+```
 
 ### Occupancy Corrected
 
