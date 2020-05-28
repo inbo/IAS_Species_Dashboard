@@ -30,10 +30,10 @@ batches <- c("Batch1", "Batch2", "Batch3")
 crs_wgs <- CRS("+proj=longlat +datum=WGS84 +no_defs ")
 crs_bel <- CRS("+proj=lcc +lat_1=51.16666723333333 +lat_2=49.8333339 +lat_0=90 +lon_0=4.367486666666666 +x_0=150000.013 +y_0=5400088.438 +ellps=intl +towgs84=-106.869,52.2978,-103.724,0.3366,-0.457,1.8422,-1.2747 +units=m +no_defs ")
 
-bel_borders <- readOGR(here("../manageability/Input/Spatial"), "Belgie", stringsAsFactors = FALSE)
+bel_borders <- readOGR(here("./Data/Spatial"), "Belgie", stringsAsFactors = FALSE)
 proj4string(bel_borders) <- crs_bel
 
-bioreg_bel_clip <- readOGR(here("../manageability/Input/Spatial"), "bioreg_bel_clip", stringsAsFactors = FALSE)
+bioreg_bel_clip <- readOGR(here("./Data/Spatial"), "bioreg_bel_clip", stringsAsFactors = FALSE)
 
 grid_pal <- colorFactor(palette = c("red", "black"), domain = utm_polygons$grid, levels = c("utm1", "utm5"))
 bioreg_pal <- colorFactor(palette = c("darkgrey", "white"), domain = bioreg_bel_clip$BIOGEO, levels = c("Continental", "Atlantic"))
@@ -57,10 +57,10 @@ utm_merged <- data.frame()
 
 for(t in ts){
   for(b in batches){
-    fn <- paste0("../manageability/Output/" , t, "_manageability_utmpolygons_", b, ".shp")
+    fn <- paste0("./Data/Spatial/" , t, "_manageability_utmpolygons_", b, ".shp")
     fn2 <- paste0( t, "_manageability_utmpolygons_", b)
     if(file.exists(here(fn))){
-      temp_utm <- readOGR(here("../manageability/Output/"), fn2, stringsAsFactors = FALSE)
+      temp_utm <- readOGR(here("./Data/Spatial"), fn2, stringsAsFactors = FALSE)
       temp_utm$tx <- t
       if(class(utm_merged) == "SpatialPolygonsDataFrame"){
         utm_merged <- rbind.SpatialPolygonsDataFrame(utm_merged, temp_utm)
@@ -80,8 +80,7 @@ stats_merged <- data.frame()
 
 for(t in ts){
   for(b in batches){
-    fn <- paste0("../manageability/Output/" , t, "_manageability_GridStats_", b, ".csv")
-    fn2 <- paste0( t, "_manageability_utmpolygons_", b)
+    fn <- paste0("./Data/Input/" , t, "_manageability_GridStats_", b, ".csv")
     if(file.exists(here(fn))){
       temp_stats <- read_delim(here(fn), delim = ";")
         temp_stats$tx <- t
@@ -103,7 +102,7 @@ Sidebar {.sidebar}
 Select a species from the dropdown
 
 ```{r create choiceslist, include=FALSE}
-spec_ind <- read_delim(here("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv"), 
+spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
                                                                     t1_from = col_date(format = "%d/%m/%Y"), 
