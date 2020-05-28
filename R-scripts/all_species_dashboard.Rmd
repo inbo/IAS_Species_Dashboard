@@ -10,6 +10,7 @@ output:
 
 ```{r setup, include=FALSE}
 require(tidyverse)
+require(data.table)
 require(shiny)
 require(here)
 require(sp)
@@ -21,7 +22,7 @@ require(kableExtra)
 require(kable)
 require(flexdashboard)
 
-bioregions <- c("Continental", "Atlantic")
+bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
 batches <- c("Batch1", "Batch2", "Batch3")
 ```
@@ -169,7 +170,7 @@ renderText({
 })
 ```
 
-Row {data-height=600}
+Row {data-height=400}
 ----------------------------------
 
 ```{r}
@@ -198,41 +199,56 @@ renderLeaflet({
 })
 ```
 
-Row {data-height=200}
+Row {data-height=300}
 ----------------------------------
 
 ### Stats
 
+*SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
+
 ```{r}
-renderText({"placeholder stats"})
-renderDataTable({
+renderTable({
   spec_stats <- stats_merged %>% 
-    filter(gbfp_SN == input$species & tx == "t0") 
+    filter(gbfp_SN == input$species & tx == "t0") %>% 
+    select(-tx)
   
-  bioregion_test <- temp_stats %>% 
+  bioregion_test <- spec_stats %>% 
     filter(bioregion %in% bioregions) 
   
   if(nrow(bioregion_test) < 2){
-    missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
-    temp_stats <- temp_stats %>% 
-      ungroup() %>% 
-      add_row(gbfp_SN = s, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    if(nrow(bioregion_test) > 0){
+      missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
+      spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    }else{
+      for(bio in bioregions){
+        spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+      }
+    }
   }
   
-  temp_stats_3 <- temp_stats  %>% 
+  temp_stats_3 <- spec_stats  %>% 
     ungroup() %>% 
     filter(!is.na(bioregion)) %>% 
     select(-gbfp_SN) %>% 
+    rename(`UTM 1x1km` = utm1,
+           `UTM 2x2km` = utm2,
+           `UTM 5x5km` = utm5,
+           `UTM 10x10km` = utm10,
+           `% UTM 1x1km squares with SACs*` = sac_perc) %>% 
     t()
   
   colnames(temp_stats_3) <- temp_stats_3[1,]
   temp_stats_3 <- temp_stats_3[-1,]
-  temp_table <- temp_stats_3 %>% 
-    kable() %>%
-    kable_styling()
-  print(temp_table)
+  temp_stats_3 <- as.data.frame(temp_stats_3) %>% 
+    rownames_to_column(var = "grid") 
+  print(temp_stats_3)
 })
 ```
+
 
 
 T1 - Report
@@ -290,8 +306,49 @@ Row {data-height=350}
 
 ### Stats 
 
+*SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
+
 ```{r}
-renderText({"placeholder stats"})
+renderTable({
+  spec_stats <- stats_merged %>% 
+    filter(gbfp_SN == input$species & tx == "t1") %>% 
+    select(-tx)
+  
+  bioregion_test <- spec_stats %>% 
+    filter(bioregion %in% bioregions) 
+  
+  if(nrow(bioregion_test) < 2){
+    if(nrow(bioregion_test) > 0){
+      missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
+      spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    }else{
+      for(bio in bioregions){
+        spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+      }
+    }
+  }
+  
+  temp_stats_3 <- spec_stats  %>% 
+    ungroup() %>% 
+    filter(!is.na(bioregion)) %>% 
+    select(-gbfp_SN) %>% 
+    rename(`UTM 1x1km` = utm1,
+           `UTM 2x2km` = utm2,
+           `UTM 5x5km` = utm5,
+           `UTM 10x10km` = utm10,
+           `% UTM 1x1km squares with SACs*` = sac_perc) %>% 
+    t()
+  
+  colnames(temp_stats_3) <- temp_stats_3[1,]
+  temp_stats_3 <- temp_stats_3[-1,]
+  temp_stats_3 <- as.data.frame(temp_stats_3) %>% 
+    rownames_to_column(var = "grid") 
+  print(temp_stats_3)
+})
 ```
 
 TrIAS Grafieken 
