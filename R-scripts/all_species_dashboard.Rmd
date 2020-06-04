@@ -172,6 +172,19 @@ renderText({
 renderText({print("")})
 ```
 
+```{r}
+renderText({print("placeholder gam about")})
+```
+
+```{r include=FALSE}
+maxjaar <- lubridate::year(Sys.Date())
+```
+
+
+```{r echo=FALSE}
+sliderInput(inputId = "evaluation_years", label = "evaluation period", min = 2000, max = maxjaar, value = c(2016,2018), step = 1, sep = "", dragRange = TRUE)
+```
+
 T0 - Baseline
 ==========================================
 
@@ -374,8 +387,17 @@ renderTable({
 TrIAS Grafieken 
 ==========================================
 
+```{r }
+renderPrint({
+  evaluation_years <- input$evaluation_years
+  print(evaluation_years)
+  })
+```
 
 
+```{r}
+renderText({print("placeholder trias-link")})
+```
 
 Row {data-height=50}
 ----------------------------------
@@ -383,9 +405,22 @@ Row {data-height=50}
 ### Occupancy
 
 ```{r}
+
+```
+
+### Occupancy Corrected
+
+Row {data-height=50}
+----------------------------------
+
+### Observations
+
+### Observations corrected
+
+```{r}
 renderPrint({
   
-  evaluation_years <- seq(2016, 2018)
+  
   
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species)
@@ -396,26 +431,17 @@ renderPrint({
   gam_occupancy <- apply_gam(
     df = df_key,
     y_var = "obs",
-    eval_years = evaluation_years,
+    eval_years = input$evaluation_years,
     type_indicator = "observations",
     baseline_var = "cobs",
-    verbose = TRUE
+    verbose = TRUE,
+    saveplot = FALSE
   )
   
   print(gam_occupancy)
   
 })
 ```
-
-### Occupancy Corrected
-
-
-Row {data-height=50}
-----------------------------------
-
-### Observations
-
-### Observations corrected
 
 About
 ==========================================
