@@ -23,6 +23,11 @@ require(kable)
 require(flexdashboard)
 require(inborutils)
 
+if("trias" %in% rownames(installed.packages()) == FALSE) {
+  devtools::install_github("trias-project/trias")}
+
+require(trias)
+
 bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
 batches <- c("Batch1", "Batch2", "Batch3")
@@ -119,9 +124,20 @@ spec_ind <- spec_ind %>%
 ```
 
 ```{r setup TrIAS data, include=FALSE}
-df_timeseries <- read_tsv(here("Data",
+df_ts <- read_tsv(here("Data",
                     "Input",
                     "df_timeseries.tsv"))
+
+df_ts_compact <-
+  df_ts %>%
+  group_by(taxonKey, year, classKey) %>%
+  summarise(
+    obs = sum(obs),
+    cobs = sum(cobs),
+    ncells = sum(pa_cobs),
+    c_ncells = sum(pa_cobs)
+  ) %>%
+  ungroup()
 ```
 
 Sidebar {.sidebar}
@@ -370,13 +386,26 @@ Row {data-height=50}
 
 ```{r}
 renderPrint({
+  
+  evaluation_years <- seq(2016, 2018)
+  
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species)
   
-  spec_cube <- df_timeseries %>% 
+  df_key <- df_ts_compact %>% 
     filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey)
   
-  print(spec_cube)
+  gam_occupancy <- apply_gam(
+    df = df_key,
+    y_var = "obs",
+    eval_years = evaluation_years,
+    type_indicator = "observations",
+    baseline_var = "cobs",
+    verbose = TRUE
+  )
+  
+  print(gam_occupancy)
+  
 })
 ```
 
