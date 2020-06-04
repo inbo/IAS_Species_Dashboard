@@ -18,8 +18,6 @@ require(rgdal)
 require(leaflet)
 require(leafem)
 require(leaflet.extras)
-require(kableExtra)
-require(kable)
 require(flexdashboard)
 require(inborutils)
 
