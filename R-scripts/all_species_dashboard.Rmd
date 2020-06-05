@@ -140,13 +140,16 @@ df_ts_compact <-
 
 Sidebar {.sidebar}
 ==================================
+### Species dropdown
 Select a species from the dropdown
+All graphs, maps and tables will be rendered
+for the selected species.
 
-```{r echo=FALSE}
-selectInput(inputId = "species", label = "Species dropdown", choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
+```{r Species dropdown, echo=FALSE}
+selectInput(inputId = "species", label = NULL, choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
 ```
 
-```{r}
+```{r Inclusion info}
 renderText({print("")})
 renderText({
   spec_ind_sub <- spec_ind %>% 
@@ -172,17 +175,24 @@ renderText({
 renderText({print("")})
 ```
 
-```{r}
-renderText({print("placeholder gam about")})
-```
-
 ```{r include=FALSE}
-maxjaar <- lubridate::year(Sys.Date())
+minjaar <- lubridate::year(Sys.Date())-5
+maxjaar <- lubridate::year(Sys.Date())-2
 ```
 
+### Emergence evaluation period
+The emergence score for the species will
+be assessed for this period
 
-```{r echo=FALSE}
-sliderInput(inputId = "evaluation_years", label = "evaluation period", min = 2000, max = maxjaar, value = c(2016,2018), step = 1, sep = "", dragRange = TRUE)
+```{r eval_years slider, echo=FALSE}
+sliderInput(inputId = "evaluation_years", label = NULL, min = minjaar, max = maxjaar, value = c(maxjaar-2,maxjaar), step = 1, sep = "", dragRange = TRUE)
+```
+
+```{r em_status info}
+renderText({
+  em_status_text <- paste0(input$species, " was considered ","-!!placeholder em_status!!-", " between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), ".") 
+  print(em_status_text)
+})
 ```
 
 T0 - Baseline
@@ -387,16 +397,15 @@ renderTable({
 TrIAS Grafieken 
 ==========================================
 
-```{r }
+```{r TrIAS constants, echo=FALSE}
+evaluation_years <- maxjaar
+```
+
+```{r include=FALSE}
 renderPrint({
   evaluation_years <- input$evaluation_years
   print(evaluation_years)
   })
-```
-
-
-```{r}
-renderText({print("placeholder trias-link")})
 ```
 
 Row {data-height=50}
@@ -405,37 +414,22 @@ Row {data-height=50}
 ### Occupancy
 
 ```{r}
-
-```
-
-### Occupancy Corrected
-
-Row {data-height=50}
-----------------------------------
-
-### Observations
-
-### Observations corrected
-
-```{r}
 renderPlot({
-  
-  
   
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species)
   
   df_key <- df_ts_compact %>% 
-    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey)
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
   
   gam_occupancy <- apply_gam(
     df = df_key,
-    y_var = "obs",
-    eval_years = input$evaluation_years,
-    type_indicator = "observations",
-    baseline_var = "cobs",
+    y_var = "ncells",
+    eval_years = evaluation_years,
+    type_indicator = "occupancy",
     verbose = TRUE,
-    saveplot = FALSE
+    saveplot = FALSE,
+    y_label = "occupancy (km2)"
   )
   
   print(gam_occupancy$plot)
@@ -443,5 +437,103 @@ renderPlot({
 })
 ```
 
+### Occupancy Corrected
+
+```{r}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  gam_occupancy_corrected <- apply_gam(
+    df = df_key,
+    y_var = "ncells",
+    eval_years = evaluation_years,
+    type_indicator = "occupancy",
+    baseline_var = "c_ncells",
+    verbose = TRUE,
+    saveplot = FALSE,
+    y_label = "occupancy (km2)"
+  )
+  
+  print(gam_occupancy_corrected$plot)
+  
+})
+```
+
+Row {data-height=50}
+----------------------------------
+
+### Observations
+
+```{r}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  gam_observations <- apply_gam(
+    df = df_key,
+    y_var = "obs",
+    eval_years = evaluation_years,
+    type_indicator = "observations",
+    verbose = TRUE,
+    saveplot = FALSE
+  )
+  
+  print(gam_observations$plot)
+  
+})
+```
+
+### Observations corrected
+
+```{r}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  gam_observations_corrected <- apply_gam(
+    df = df_key,
+    y_var = "obs",
+    eval_years = evaluation_years,
+    type_indicator = "observations",
+    baseline_var = "cobs",
+    verbose = TRUE,
+    saveplot = FALSE
+  )
+  
+  print(gam_observations_corrected$plot)
+  
+})
+```
+
 About
 ==========================================
+
+Column {.tabset}
+-------------------------------------
+
+### T0 - Baseline
+
+### T1 - Report
+
+### TrIAS - Grafieken
+
+-!!placeholder TrIAS link!!- 
+
+#### Basic
+
+#### Corrected
+
+### Partners
