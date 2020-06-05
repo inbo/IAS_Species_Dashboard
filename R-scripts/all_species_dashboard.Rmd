@@ -418,7 +418,7 @@ Row {data-height=50}
 ### Observations corrected
 
 ```{r}
-renderPrint({
+renderPlot({
   
   
   
@@ -438,7 +438,7 @@ renderPrint({
     saveplot = FALSE
   )
   
-  print(gam_occupancy)
+  print(gam_occupancy$plot)
   
 })
 ```
