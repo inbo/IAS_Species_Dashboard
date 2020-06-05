@@ -43,3 +43,4 @@ Data/Interim/be_species_info.csv
 Data/Interim/it_species_cube.csv
 Data/Interim/it_species_info.csv
 Data/Input/df_timeseries.tsv
+.Rproj.user
