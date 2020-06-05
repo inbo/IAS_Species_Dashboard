@@ -20,6 +20,7 @@ require(leafem)
 require(leaflet.extras)
 require(flexdashboard)
 require(inborutils)
+require(imager)
 
 if("trias" %in% rownames(installed.packages()) == FALSE) {
   devtools::install_github("trias-project/trias")}
@@ -88,7 +89,7 @@ for(t in ts){
     fn <- paste0("./Data/Input/" , t, "_manageability_GridStats_", b, ".csv")
     if(file.exists(here(fn))){
       temp_stats <- read_delim(here(fn), delim = ";")
-        temp_stats$tx <- t
+      temp_stats$tx <- t
       if(nrow(stats_merged) > 0){
         stats_merged <- rbind.SpatialPolygonsDataFrame(stats_merged, temp_stats)
       }else{
@@ -123,8 +124,8 @@ spec_ind <- spec_ind %>%
 
 ```{r setup TrIAS data, include=FALSE}
 df_ts <- read_tsv(here("Data",
-                    "Input",
-                    "df_timeseries.tsv"))
+                       "Input",
+                       "df_timeseries.tsv"))
 
 df_ts_compact <-
   df_ts %>%
@@ -181,17 +182,70 @@ maxjaar <- lubridate::year(Sys.Date())-2
 ```
 
 ### Emergence evaluation period
-The emergence score for the species will
+The emergence status for the species will
 be assessed for this period
 
 ```{r eval_years slider, echo=FALSE}
-sliderInput(inputId = "evaluation_years", label = NULL, min = minjaar, max = maxjaar, value = c(maxjaar-2,maxjaar), step = 1, sep = "", dragRange = TRUE)
+sliderInput(inputId = "evaluation_years", label = NULL, min = minjaar, max = lubridate::year(Sys.Date()), value = c(maxjaar-2,maxjaar), step = 1, sep = "", dragRange = TRUE)
 ```
 
 ```{r em_status info}
 renderText({
-  em_status_text <- paste0(input$species, " was considered ","-!!placeholder em_status!!-", " between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), ".") 
-  print(em_status_text)
+  if(max(input$evaluation_years) > maxjaar){
+    print("WARNING: Due to reporting lag, it is possible the emergence status is not calculated correctly!")
+  }else{
+    print("")
+  }
+})
+
+renderText({print("")})
+
+renderText({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey)
+  
+  em_decision_rules_occs_BE <- data.frame(taxonKey = 0, year = 0, em_status = 1, dr_1 = FALSE, dr_2 = FALSE,dr_3 = FALSE,dr_4 = FALSE)
+  
+  if(nrow(df_key) > 0){
+    for(j in input$evaluation_years){
+      temp <- apply_decision_rules(
+        df = df_key,
+        y_var = "obs",
+        eval_year = j,
+        year = "year"
+      )
+      em_decision_rules_occs_BE <- rbind(em_decision_rules_occs_BE, temp)
+    }
+  }
+  
+  em_status_code <- max(em_decision_rules_occs_BE$em_status, na.rm = TRUE)
+  
+  if(em_status_code == 0){
+    em_status <- "not emerging"
+  }
+  if(em_status_code == 1){
+    em_status <- "unclear"
+  }
+  if(em_status_code == 2){
+    em_status <- "potentially emerging"
+  }
+  if(em_status_code == 3){
+    em_status <- "emerging"
+  }
+  
+  em_status_text <- paste0("The emergence status of ", input$species, " was considered ",em_status, " in Belgium between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), ".") 
+  
+  alt_em_status_text <- paste0("The emergence status of ", input$species, " between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), " cannot be assessed.") 
+  
+  if(nrow(df_key) > 0){
+    print(em_status_text)
+  }else{
+    print(alt_em_status_text)
+  }
+  
 })
 ```
 
@@ -267,8 +321,8 @@ renderTable({
     }else{
       for(bio in bioregions){
         spec_stats <- spec_stats %>% 
-        ungroup() %>% 
-        add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+          ungroup() %>% 
+          add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
       }
     }
   }
@@ -369,8 +423,8 @@ renderTable({
     }else{
       for(bio in bioregions){
         spec_stats <- spec_stats %>% 
-        ungroup() %>% 
-        add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+          ungroup() %>% 
+          add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
       }
     }
   }
@@ -394,7 +448,7 @@ renderTable({
 })
 ```
 
-TrIAS Grafieken 
+Emergence Graphs 
 ==========================================
 
 ```{r TrIAS constants, echo=FALSE}
@@ -405,7 +459,7 @@ evaluation_years <- maxjaar
 renderPrint({
   evaluation_years <- input$evaluation_years
   print(evaluation_years)
-  })
+})
 ```
 
 Row {data-height=50}
@@ -518,6 +572,12 @@ renderPlot({
 })
 ```
 
+Emergence Graphs - SAC's
+==========================================
+
+Emergence Graphs - SPA's
+==========================================
+
 About
 ==========================================
 
@@ -528,12 +588,27 @@ Column {.tabset}
 
 ### T1 - Report
 
-### TrIAS - Grafieken
+### Emergence Graphs
 
 -!!placeholder TrIAS link!!- 
+
+### Emergence Graphs - SAC's
+
+### Emergence Graphs - SPA's
 
 #### Basic
 
 #### Corrected
 
 ### Partners
+```{r logos}
+renderImage({
+  filename <- here("Image",
+                   "Logo",
+                   "INSTvoorNatuur_eng.jpeg")
+  
+  # Return a list containing the filename and alt text
+  inbo_logo <- list(src = filename,
+                    alt = paste("INBO - Logo"))
+})
+```
