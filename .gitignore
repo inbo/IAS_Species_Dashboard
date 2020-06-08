@@ -38,9 +38,9 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 *.Rproj
-Data/Interim/be_species_cube.csv
-Data/Interim/be_species_info.csv
-Data/Interim/it_species_cube.csv
-Data/Interim/it_species_info.csv
-Data/Input/df_timeseries.tsv
+data/interim/be_species_cube.csv
+data/interim/be_species_info.csv
+data/interim/it_species_cube.csv
+data/interim/it_species_info.csv
+data/input/df_timeseries.tsv
 .Rproj.user
