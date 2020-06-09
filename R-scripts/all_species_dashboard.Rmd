@@ -1,10 +1,10 @@
 ---
 title: "All_Species_Dashboard"
+runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
     horizontal_layout: fill
-    runtime: shiny
     theme: default
 ---
 
@@ -22,26 +22,29 @@ require(flexdashboard)
 require(inborutils)
 require(imager)
 require(RCurl)
+require(rsconnect)
 
 if("trias" %in% rownames(installed.packages()) == FALSE) {
   devtools::install_github("trias-project/trias")}
 
 require(trias)
 
+minjaar <- lubridate::year(Sys.Date())-5
+maxjaar <- lubridate::year(Sys.Date())-2
+
 bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
 batches <- c("Batch1", "Batch2", "Batch3")
-```
 
-```{r create basemap, include=FALSE}
 crs_wgs <- CRS("+proj=longlat +datum=WGS84 +no_defs ")
 crs_bel <- CRS("+proj=lcc +lat_1=51.16666723333333 +lat_2=49.8333339 +lat_0=90 +lon_0=4.367486666666666 +x_0=150000.013 +y_0=5400088.438 +ellps=intl +towgs84=-106.869,52.2978,-103.724,0.3366,-0.457,1.8422,-1.2747 +units=m +no_defs ")
+```
 
-bel_borders <- readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/Belgie.geojson", "Belgie", stringsAsFactors = FALSE)
-proj4string(bel_borders) <- crs_bel
-
-
+```{r data, include=FALSE, context="data", cache=TRUE}
 bioreg_bel_clip <- readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/bioreg_bel_clip.geojson", "bioreg_bel_clip", stringsAsFactors = FALSE)
+bel_borders <- readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/Belgie.geojson", "Belgie", stringsAsFactors = FALSE)
+
+proj4string(bel_borders) <- crs_bel
 
 grid_pal <- colorFactor(palette = c("red", "black"), domain = utm_polygons$grid, levels = c("utm1", "utm5"))
 bioreg_pal <- colorFactor(palette = c("darkgrey", "white"), domain = bioreg_bel_clip$BIOGEO, levels = c("Continental", "Atlantic"))
@@ -58,9 +61,8 @@ basemap <- leaflet(bioreg_bel_clip) %>%
   addScaleBar(position = "bottomleft") %>% 
   addLogo(img = "https://cdn2.iconfinder.com/data/icons/map-and-navigation-12/48/57-512.png", src = "remote", position = "bottomright") %>% 
   setMapWidgetStyle(list(background= "white"))
-```
 
-```{r get & merge utm_polygons, include=FALSE}
+
 utm_merged <- data.frame()
 
 for(t in ts){
@@ -82,9 +84,6 @@ for(t in ts){
   }
 }
 
-```
-
-```{r get & merge GridStats, include= FALSE}
 stats_merged <- data.frame()
 
 for(t in ts){
@@ -103,9 +102,7 @@ for(t in ts){
     }
   }
 }
-```
 
-```{r create choiceslist, include=FALSE}
 spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
@@ -123,9 +120,7 @@ species_choices$Species <- str_sort(species_choices$Species)
 
 spec_ind <- spec_ind %>% 
   filter(!is.na(Batch))
-```
 
-```{r setup TrIAS data, include=FALSE}
 df_ts <- read_tsv("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Input/df_timeseries_redux.tsv")
 
 df_ts_compact <-
@@ -147,11 +142,11 @@ Select a species from the dropdown
 All graphs, maps and tables will be rendered
 for the selected species.
 
-```{r Species dropdown, echo=FALSE}
+```{r Species dropdown, context="server"}
 selectInput(inputId = "species", label = NULL, choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
 ```
 
-```{r Inclusion info}
+```{r Inclusion info, context="server"}
 renderText({print("")})
 renderText({
   spec_ind_sub <- spec_ind %>% 
@@ -177,20 +172,16 @@ renderText({
 renderText({print("")})
 ```
 
-```{r include=FALSE}
-minjaar <- lubridate::year(Sys.Date())-5
-maxjaar <- lubridate::year(Sys.Date())-2
-```
 
 ### Emergence evaluation period
 The emergence status for the species will
 be assessed for this period
 
-```{r eval_years slider, echo=FALSE}
+```{r eval_years slider, context="server"}
 sliderInput(inputId = "evaluation_years", label = NULL, min = minjaar, max = lubridate::year(Sys.Date()), value = c(maxjaar-2,maxjaar), step = 1, sep = "", dragRange = TRUE)
 ```
 
-```{r em_status info}
+```{r em_status info, context="server"}
 renderText({
   if(max(input$evaluation_years) > maxjaar){
     print("WARNING: Due to reporting lag, it is possible the emergence status is not calculated correctly!")
@@ -256,7 +247,7 @@ T0 - Baseline
 Row {data-height=50}
 ----------------------------------
 
-```{r echo=FALSE}
+```{r echo=FALSE, context="server"}
 renderText({
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -271,8 +262,11 @@ renderText({
 Row {data-height=400}
 ----------------------------------
 
-```{r}
+```{r, context="server"}
 renderLeaflet({
+  # force(basemap)
+  # force(utm_merged)
+  
   utm_t0 <- subset(utm_merged, utm_merged$tx == "t0")
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -304,7 +298,7 @@ Row {data-height=300}
 
 *SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
 
-```{r}
+```{r, context="server"}
 renderTable({
   spec_stats <- stats_merged %>% 
     filter(gbfp_SN == input$species & tx == "t0") %>% 
@@ -355,7 +349,7 @@ T1 - Report
 Row {data-height=50}
 ----------------------------------
 
-```{r eval=TRUE}
+```{r eval=TRUE, context="server"}
 renderText({
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -373,8 +367,12 @@ renderText({
 Row {data-height=650}
 ----------------------------------
 
-```{r}
+```{r, context="server"}
 renderLeaflet({
+  
+  # force(basemap)
+  # force(utm_merged)
+  
   utm_t1 <- subset(utm_merged, utm_merged$tx == "t1")
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -406,7 +404,7 @@ Row {data-height=350}
 
 *SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
 
-```{r}
+```{r, context="server"}
 renderTable({
   spec_stats <- stats_merged %>% 
     filter(gbfp_SN == input$species & tx == "t1") %>% 
@@ -452,11 +450,11 @@ renderTable({
 Emergence Graphs 
 ==========================================
 
-```{r TrIAS constants, echo=FALSE}
+```{r TrIAS constants, echo=FALSE, context="setup"}
 evaluation_years <- maxjaar
 ```
 
-```{r include=FALSE}
+```{r include=FALSE, context="server"}
 renderPrint({
   evaluation_years <- input$evaluation_years
   print(evaluation_years)
@@ -468,7 +466,7 @@ Row {data-height=50}
 
 ### Occupancy
 
-```{r}
+```{r, context="server"}
 renderPlot({
   
   spec_ind_sub <- spec_ind %>% 
@@ -494,7 +492,7 @@ renderPlot({
 
 ### Occupancy Corrected
 
-```{r}
+```{r, context="server"}
 renderPlot({
   
   spec_ind_sub <- spec_ind %>% 
@@ -524,7 +522,7 @@ Row {data-height=50}
 
 ### Observations
 
-```{r}
+```{r, context="server"}
 renderPlot({
   
   spec_ind_sub <- spec_ind %>% 
@@ -549,7 +547,7 @@ renderPlot({
 
 ### Observations corrected
 
-```{r}
+```{r, context="server"}
 renderPlot({
   
   spec_ind_sub <- spec_ind %>% 
