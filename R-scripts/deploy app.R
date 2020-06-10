@@ -3,7 +3,7 @@ library(rmarkdown)
 rmarkdown::shiny_prerendered_clean
 
 library(rsconnect)
-rsconnect::deployApp("./R-scripts/all_species_dashboard.Rmd", appFiles = "./data/", upload = TRUE, forceUpdate = TRUE)
+rsconnect::deployApp("./R-scripts/all_species_dashboard.Rmd", forceUpdate = TRUE)
 
 # output_dir <- "./output"
 # output_file <- "IAS_Species_Dashboard"
