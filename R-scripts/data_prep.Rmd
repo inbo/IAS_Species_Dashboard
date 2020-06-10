@@ -48,3 +48,60 @@ write_tsv(df_ts_sub, here("data",
                "df_timeseries_redux.tsv"))
 ```
 
+```{r utms & stats general}
+bioregions <- c("Atlantic", "Continental")
+ts <- c("t0", "t1")
+batches <- c("Batch1", "Batch2", "Batch3")
+```
+
+```{r utm_polygons}
+utm_merged <- data.frame()
+
+source(here("R-scripts",
+            "make_geojsons.R"))
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/",t, "_manageability_utmpolygons_", b, ".geojson")
+    fn2 <- paste0(t, "_manageability_utmpolygons_", b)
+    #Determine if url loads correctly (ea status_code == 200)
+    if(httr::status_code(httr::GET(fn)) == 200){
+      temp_utm <- readOGR(fn, fn2, stringsAsFactors = FALSE)
+      temp_utm$tx <- t
+      if(class(utm_merged) == "SpatialPolygonsDataFrame"){
+        utm_merged <- rbind.SpatialPolygonsDataFrame(utm_merged, temp_utm)
+      }else{
+        utm_merged <- temp_utm
+      }
+    }else{
+      next()
+    }
+  }
+}
+
+writeOGR(utm_merged, here("Data", "Spatial", "utm_merged.geojson"), layer="utm_merged", driver="GeoJSON",overwrite_layer=T)
+```
+
+```{r stats}
+stats_merged <- data.frame()
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Input/", t, "_manageability_GridStats_", b, ".csv")
+    if(httr::status_code(httr::GET(fn)) == 200){
+      temp_stats <- read_delim(fn, delim = ";", locale = locale("en"))
+      temp_stats$tx <- t
+      if(nrow(stats_merged) > 0){
+        stats_merged <- rbind(stats_merged, temp_stats)
+      }else{
+        stats_merged <- temp_stats
+      }
+    }else{
+      next()
+    }
+  }
+}
+
+write_delim(stats_merged, here("Data", "Interim", "stats_merged.csv"), ";")
+```
+
