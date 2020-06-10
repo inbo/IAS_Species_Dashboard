@@ -43,8 +43,8 @@ df_ts_sub <- df_ts %>%
   ) %>%
   ungroup()
 
-write_tsv(df_ts_sub, here("data",
-                          "input",
+write_tsv(df_ts_sub, here("Data",
+                          "Interim",
                "df_timeseries_redux.tsv"))
 ```
 
