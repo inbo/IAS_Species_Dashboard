@@ -420,7 +420,7 @@ Row {data-height=50}
 
 ### Occupancy
 
-```{r, context="server"}
+```{r, eval=TRUE, context="server"}
 renderPlot({
   
   spec_ind_sub <- spec_ind %>% 
@@ -429,19 +429,44 @@ renderPlot({
   df_key <- df_ts_compact %>% 
     filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
   
-  gam_occupancy <- apply_gam(
-    df = df_key,
-    y_var = "ncells",
-    eval_years = evaluation_years,
-    type_indicator = "occupancy",
-    verbose = TRUE,
-    saveplot = FALSE,
-    y_label = "occupancy (km2)"
-  )
+  if(nrow(df_key) > 0){
+    gam_occupancy <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "ncells",
+      eval_years = max(df_key$year),
+      type_indicator = "occupancy",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "occupancy (km2)"
+    ), warning = function(w){"error"})
+  }else{
+    gam_occupancy <- "empty"
+  }
   
-  print(gam_occupancy$plot)
+  
+  if(gam_occupancy == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_occupancy == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_occupancy != "error" & gam_occupancy != "empty"){
+    print(gam_occupancy$plot)
+  }
+  
   
 })
+
 ```
 
 ### Occupancy Corrected
