@@ -485,7 +485,8 @@ renderPlot({
   if(nrow(df_key) > 0){
     gam_occupancy_cor <- tryCatch(apply_gam(
       df = df_key,
-      y_var = "c_ncells",
+      y_var = "ncells",
+      baseline_var = "c_ncells",
       eval_years = max(df_key$year),
       type_indicator = "occupancy",
       verbose = TRUE,
@@ -590,7 +591,8 @@ renderPlot({
   if(nrow(df_key) > 0){
     gam_observations_cor <- tryCatch(apply_gam(
       df = df_key,
-      y_var = "cobs",
+      y_var = "obs",
+      baseline_var = "cobs",
       eval_years = max(df_key$year),
       type_indicator = "observations",
       verbose = TRUE,
