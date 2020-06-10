@@ -71,7 +71,7 @@ df_ts_sub <- df_ts %>%
   summarise(
     obs = sum(obs),
     cobs = sum(cobs),
-    ncells = sum(pa_cobs),
+    ncells = sum(pa_obs),
     c_ncells = sum(pa_cobs)
   ) %>%
   ungroup()
@@ -218,7 +218,7 @@ df_ts_old_sub <- df_ts_old %>%
   summarise(
     obs = sum(obs),
     cobs = sum(cobs),
-    ncells = sum(pa_cobs),
+    ncells = sum(pa_obs),
     c_ncells = sum(pa_cobs)
   ) %>%
   ungroup()
