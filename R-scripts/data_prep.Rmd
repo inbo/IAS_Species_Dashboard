@@ -12,7 +12,7 @@ library(here)
 ```
 
 ```{r general}
-spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
+spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
                                                                     t1_from = col_date(format = "%d/%m/%Y"), 
@@ -224,6 +224,21 @@ df_ts_old_sub <- df_ts_old %>%
   ungroup()
 
 df_ts_sub_OeN <- rbind(df_ts_old_sub, df_ts_sub)
+
+Trachemys <- c(2442941,
+               6157026,
+               6157035,
+               7062200)
+
+df_ts_sub_OeN <- df_ts_sub_OeN %>% 
+  mutate(taxonKey = case_when(taxonKey %in% Trachemys ~ 2442941,
+                                TRUE ~ taxonKey)) %>% 
+  group_by(taxonKey, year) %>% 
+  summarise(obs = sum(obs, na.rm = TRUE),
+            cobs = sum(cobs, na.rm = TRUE),
+            ncells = sum(ncells, na.rm = TRUE),
+            c_ncells = sum(c_ncells, na.rm = TRUE),
+            classKey = first(classKey))
 
 write_tsv(df_ts_sub_OeN, here("Data",
                               "Interim",
