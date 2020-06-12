@@ -68,7 +68,7 @@ utm_merged <-  readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_vers
 
 stats_merged <- read_delim("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Interim/stats_merged.csv", ";")
 
-spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
+spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
                                                                     t1_from = col_date(format = "%d/%m/%Y"), 
@@ -83,8 +83,15 @@ species_choices <- spec_ind %>%
 
 species_choices$Species <- str_sort(species_choices$Species)
 
+Trachemys <- c(2442941,
+               6157026,
+               6157035,
+               7062200)
+
 spec_ind <- spec_ind %>% 
-  filter(!is.na(Batch))
+  filter(!is.na(Batch)) %>% 
+  mutate(gbifapi_acceptedKey = case_when(gbifapi_acceptedKey %in% Trachemys ~ 2442941,
+                              TRUE ~ gbifapi_acceptedKey))
 
 df_ts_compact <- read_tsv("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Interim/df_timeseries_redux.tsv")
 ```
