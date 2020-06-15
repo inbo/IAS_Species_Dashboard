@@ -1,0 +1,304 @@
+---
+title: "Data_Prep"
+author: "Sander Devisscher"
+date: "10-6-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+```
+
+```{r general}
+spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
+                       ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
+                                                                    t0_to = col_date(format = "%d/%m/%Y"), 
+                                                                    t1_from = col_date(format = "%d/%m/%Y"), 
+                                                                    t1_to = col_date(format = "%d/%m/%Y")), 
+                       trim_ws = TRUE, locale = locale("en"))
+
+species_choices <- spec_ind %>% 
+  filter(!is.na(Batch)) %>% 
+  mutate(Species = case_when(grepl("Salvinia", gbifapi_acceptedScientificName) ~ "Salvinia auriculata Aubl.",
+                             TRUE ~ gbifapi_acceptedScientificName)) %>% 
+  distinct(Species, gbifapi_acceptedKey) 
+```
+
+```{r TrIAS}
+df_ts <- read_tsv(here("data",
+                       "input",
+                       "df_timeseries.tsv"),
+                  locale = locale("en"))
+
+old_species <- read_delim("https://raw.githubusercontent.com/trias-project/indicators/master/data/output/taxa_introduced_in_BE_before_1950.tsv", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+
+  
+df_raw <- read_csv(
+  file = "https://raw.githubusercontent.com/trias-project/occ-cube-alien/master/data/processed/be_alientaxa_cube.csv",
+  col_types = cols(
+    year = col_double(),
+    eea_cell_code = col_character(),
+    taxonKey = col_double(),
+    n = col_double(),
+    min_coord_uncertainty = col_double()
+  ),
+  na = ""
+)
+
+df_bl_raw <- read_csv(
+  file = "https://raw.githubusercontent.com/trias-project/occ-cube-alien/master/data/processed/be_classes_cube.csv",
+  col_types = cols(
+    year = col_double(),
+    eea_cell_code = col_character(),
+    classKey = col_double(),
+    n = col_double(),
+    min_coord_uncertainty = col_double()
+  ),
+  na = ""
+)
+
+df_prot_areas <- read_tsv("https://github.com/trias-project/indicators/raw/master/data/interim/intersect_EEA_ref_grid_protected_areas.tsv",
+  na = ""
+)
+# Recent Species (>1950)
+df_ts_sub <- df_ts %>% 
+  filter(taxonKey %in% species_choices$gbifapi_acceptedKey) %>%
+  group_by(taxonKey, year, classKey) %>%
+  summarise(
+    obs = sum(obs),
+    cobs = sum(cobs),
+    ncells = sum(pa_obs),
+    c_ncells = sum(pa_cobs)
+  ) %>%
+  ungroup()
+
+# Old Species (<1950)
+old_species <- old_species %>% 
+  filter(taxonKey %in% species_choices$gbifapi_acceptedKey)
+
+df_prot_areas <-
+  df_prot_areas %>%
+  select(
+    CELLCODE,
+    natura2000
+  )
+
+df_old <- df_raw %>% 
+  filter(taxonKey %in% old_species$taxonKey) %>% 
+  select(-min_coord_uncertainty) %>% 
+  rename(obs = n) %>% 
+  left_join(df_prot_areas,
+    by = c("eea_cell_code" = "CELLCODE")
+  )
+
+df_bl_old <- df_bl_raw %>% 
+  select(-min_coord_uncertainty) %>% 
+  rename(cobs = n) %>% 
+  left_join(df_prot_areas,
+    by = c("eea_cell_code" = "CELLCODE")
+  )
+
+#Spec names:
+taxon_key <-
+  df_old %>%
+  distinct(taxonKey) %>%
+  pull()
+#pb <- progress_bar$new(total = length(taxon_key))
+spec_names <- map_df(
+  taxon_key,
+  function(k) {
+    #pb$tick()
+    rgbif::name_usage(key = k, return = "data")
+  }
+) %>%
+  select(
+    taxonKey = key,
+    canonicalName,
+    scientificName,
+    kingdomKey, classKey
+  ) %>%
+  mutate(canonicalName = ifelse(
+    is.na(canonicalName), scientificName, canonicalName
+  ))
+
+spec_names <-
+  spec_names %>%
+  group_by(canonicalName) %>%
+  add_tally() %>%
+  ungroup() %>%
+  mutate(canonicalName = if_else(n > 1,
+                                 scientificName,
+                                 canonicalName)) %>%
+  select(-c(n, scientificName))
+
+class_key <-
+  spec_names %>%
+  distinct(classKey) %>%
+  filter(!is.na(classKey)) %>%
+  pull()
+
+#pb <- progress_bar$new(total = length(class_key))
+kingdom_class <- map_df(
+  class_key,
+  function(x) {
+   # pb$tick()
+    rgbif::name_usage(key = x, return = "data")
+  }
+) %>%
+  select(classKey, class, kingdomKey, kingdom)
+
+spec_names <-
+  spec_names %>%
+  left_join(kingdom_class, by = c("kingdomKey", "classKey")) %>%
+  filter(is.na(classKey))
+
+# make timeseries
+df_cc <- 
+  df_old %>%
+  group_by(taxonKey) %>%
+  distinct(eea_cell_code) %>%
+  ungroup()
+df_begin_year <- 
+  df_old %>%
+  group_by(taxonKey) %>%
+  summarize(begin_year = min(year))
+df_cc <- 
+  df_cc %>%
+  left_join(df_begin_year, by = "taxonKey") %>%
+  select(taxonKey, begin_year, eea_cell_code)
+
+make_time_series <- function(eea_cell_code, taxonKey, begin_year, last_year ) {
+  expand_grid(eea_cell_code = eea_cell_code,
+              taxonKey = taxonKey,
+              year = seq(from = begin_year, to = last_year))
+}
+# create timeseries slots
+df_ts_old <- pmap_dfr(df_cc, 
+                  .f = make_time_series, 
+                  last_year = lubridate::year(Sys.Date())
+)
+## Add data
+# add occurrence data
+df_ts_old <- 
+  df_ts_old %>%
+  left_join(df_old %>% select(taxonKey, year, eea_cell_code, obs), 
+            by = c("taxonKey", "year", "eea_cell_code"))
+# add membership to protected areas
+df_ts_old <- 
+  df_ts_old %>%
+  left_join(df_prot_areas %>% select(CELLCODE, natura2000),
+            by = c("eea_cell_code" = "CELLCODE"))
+# add classKey
+df_ts_old <- 
+  df_ts_old %>%
+  left_join(spec_names %>% 
+              select(taxonKey, classKey), 
+            by = "taxonKey")
+
+# add baseline data (at class level) diminished by obs of specific alien taxon
+df_ts_old <- 
+  df_ts_old %>%
+  left_join(df_bl_old %>%
+              select(year, eea_cell_code, classKey, cobs),
+            by = c("year", "eea_cell_code", "classKey")) %>%
+  mutate(cobs = cobs - obs) 
+
+df_ts_old <- 
+  df_ts_old %>%
+  replace_na(list(cobs = 0, obs = 0)) %>%
+  mutate(pa_cobs = if_else(cobs > 0, 1, 0),
+         pa_obs = if_else(obs > 0, 1, 0))
+
+df_ts_old_sub <- df_ts_old %>% 
+  group_by(taxonKey, year, classKey) %>%
+  summarise(
+    obs = sum(obs),
+    cobs = sum(cobs),
+    ncells = sum(pa_obs),
+    c_ncells = sum(pa_cobs)
+  ) %>%
+  ungroup()
+
+df_ts_sub_OeN <- rbind(df_ts_old_sub, df_ts_sub)
+
+Trachemys <- c(2442941,
+               6157026,
+               6157035,
+               7062200)
+
+df_ts_sub_OeN <- df_ts_sub_OeN %>% 
+  mutate(taxonKey = case_when(taxonKey %in% Trachemys ~ 2442941,
+                                TRUE ~ taxonKey)) %>% 
+  group_by(taxonKey, year) %>% 
+  summarise(obs = sum(obs, na.rm = TRUE),
+            cobs = sum(cobs, na.rm = TRUE),
+            ncells = sum(ncells, na.rm = TRUE),
+            c_ncells = sum(c_ncells, na.rm = TRUE),
+            classKey = first(classKey))
+
+write_tsv(df_ts_sub_OeN, here("Data",
+                              "Interim",
+                              "df_timeseries_redux.tsv"))
+```
+
+```{r utms & stats general}
+bioregions <- c("Atlantic", "Continental")
+ts <- c("t0", "t1")
+batches <- c("Batch1", "Batch2", "Batch3")
+```
+
+```{r utm_polygons}
+utm_merged <- data.frame()
+
+source(here("R-scripts",
+            "make_geojsons.R"))
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/",t, "_manageability_utmpolygons_", b, ".geojson")
+    fn2 <- paste0(t, "_manageability_utmpolygons_", b)
+    #Determine if url loads correctly (ea status_code == 200)
+    if(httr::status_code(httr::GET(fn)) == 200){
+      temp_utm <- readOGR(fn, fn2, stringsAsFactors = FALSE)
+      temp_utm$tx <- t
+      if(class(utm_merged) == "SpatialPolygonsDataFrame"){
+        utm_merged <- rbind.SpatialPolygonsDataFrame(utm_merged, temp_utm)
+      }else{
+        utm_merged <- temp_utm
+      }
+    }else{
+      next()
+    }
+  }
+}
+
+writeOGR(utm_merged, here("Data", "Spatial", "utm_merged.geojson"), layer="utm_merged", driver="GeoJSON",overwrite_layer=T)
+```
+
+```{r stats}
+stats_merged <- data.frame()
+
+for(t in ts){
+  for(b in batches){
+    fn <- paste0("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Input/", t, "_manageability_GridStats_", b, ".csv")
+    if(httr::status_code(httr::GET(fn)) == 200){
+      temp_stats <- read_delim(fn, delim = ";", locale = locale("en"))
+      temp_stats$tx <- t
+      if(nrow(stats_merged) > 0){
+        stats_merged <- rbind(stats_merged, temp_stats)
+      }else{
+        stats_merged <- temp_stats
+      }
+    }else{
+      next()
+    }
+  }
+}
+
+write_delim(stats_merged, here("Data", "Interim", "stats_merged.csv"), ";")
+```
+

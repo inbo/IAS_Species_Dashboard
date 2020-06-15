@@ -1,15 +1,16 @@
 ---
 title: "All_Species_Dashboard"
+runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
     horizontal_layout: fill
-    
-    runtime: shiny
+    theme: default
 ---
 
 ```{r setup, include=FALSE}
 require(tidyverse)
+require(data.table)
 require(shiny)
 require(here)
 require(sp)
@@ -17,23 +18,33 @@ require(rgdal)
 require(leaflet)
 require(leafem)
 require(leaflet.extras)
-require(kableExtra)
-require(kable)
 require(flexdashboard)
+require(inborutils)
+require(imager)
+require(RCurl)
+require(rsconnect)
 
-bioregions <- c("Continental", "Atlantic")
+if("trias" %in% rownames(installed.packages()) == FALSE) {
+  devtools::install_github("trias-project/trias")}
+
+require(trias)
+
+minjaar <- lubridate::year(Sys.Date())-5
+maxjaar <- lubridate::year(Sys.Date())-2
+
+bioregions <- c("Atlantic", "Continental")
 ts <- c("t0", "t1")
 batches <- c("Batch1", "Batch2", "Batch3")
-```
 
-```{r create basemap, include=FALSE}
 crs_wgs <- CRS("+proj=longlat +datum=WGS84 +no_defs ")
 crs_bel <- CRS("+proj=lcc +lat_1=51.16666723333333 +lat_2=49.8333339 +lat_0=90 +lon_0=4.367486666666666 +x_0=150000.013 +y_0=5400088.438 +ellps=intl +towgs84=-106.869,52.2978,-103.724,0.3366,-0.457,1.8422,-1.2747 +units=m +no_defs ")
+```
 
-bel_borders <- readOGR(here("./Data/Spatial"), "Belgie", stringsAsFactors = FALSE)
+```{r data, include=FALSE, context="data", cache=TRUE}
+bioreg_bel_clip <- readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/bioreg_bel_clip.geojson", "bioreg_bel_clip", stringsAsFactors = FALSE)
+bel_borders <- readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/Belgie.geojson", "Belgie", stringsAsFactors = FALSE)
+
 proj4string(bel_borders) <- crs_bel
-
-bioreg_bel_clip <- readOGR(here("./Data/Spatial"), "bioreg_bel_clip", stringsAsFactors = FALSE)
 
 grid_pal <- colorFactor(palette = c("red", "black"), domain = utm_polygons$grid, levels = c("utm1", "utm5"))
 bioreg_pal <- colorFactor(palette = c("darkgrey", "white"), domain = bioreg_bel_clip$BIOGEO, levels = c("Continental", "Atlantic"))
@@ -50,64 +61,19 @@ basemap <- leaflet(bioreg_bel_clip) %>%
   addScaleBar(position = "bottomleft") %>% 
   addLogo(img = "https://cdn2.iconfinder.com/data/icons/map-and-navigation-12/48/57-512.png", src = "remote", position = "bottomright") %>% 
   setMapWidgetStyle(list(background= "white"))
-```
-
-```{r get & merge utm_polygons, include=FALSE}
-utm_merged <- data.frame()
-
-for(t in ts){
-  for(b in batches){
-    fn <- paste0("./Data/Spatial/" , t, "_manageability_utmpolygons_", b, ".shp")
-    fn2 <- paste0( t, "_manageability_utmpolygons_", b)
-    if(file.exists(here(fn))){
-      temp_utm <- readOGR(here("./Data/Spatial"), fn2, stringsAsFactors = FALSE)
-      temp_utm$tx <- t
-      if(class(utm_merged) == "SpatialPolygonsDataFrame"){
-        utm_merged <- rbind.SpatialPolygonsDataFrame(utm_merged, temp_utm)
-      }else{
-        utm_merged <- temp_utm
-      }
-    }else{
-      next()
-    }
-  }
-}
-
-```
-
-```{r get & merge GridStats, include= FALSE}
-stats_merged <- data.frame()
-
-for(t in ts){
-  for(b in batches){
-    fn <- paste0("./Data/Input/" , t, "_manageability_GridStats_", b, ".csv")
-    if(file.exists(here(fn))){
-      temp_stats <- read_delim(here(fn), delim = ";")
-        temp_stats$tx <- t
-      if(nrow(stats_merged) > 0){
-        stats_merged <- rbind.SpatialPolygonsDataFrame(stats_merged, temp_stats)
-      }else{
-        stats_merged <- temp_stats
-      }
-    }else{
-      next()
-    }
-  }
-}
-```
 
 
-Sidebar {.sidebar}
-==================================
-Select a species from the dropdown
+utm_merged <-  readOGR("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Spatial/utm_merged.geojson",
+                       "utm_merged", stringsAsFactors = FALSE)
 
-```{r create choiceslist, include=FALSE}
-spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/master/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
+stats_merged <- read_delim("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Interim/stats_merged.csv", ";")
+
+spec_ind <- read_delim("https://raw.githubusercontent.com/inbo/IAS_Species_Dashboard/3_version1.0/Data/Lists/nameserver_species_identifiers_for_t0.csv", 
                        ";", escape_double = FALSE, col_types = cols(t0_from = col_date(format = "%d/%m/%Y"), 
                                                                     t0_to = col_date(format = "%d/%m/%Y"), 
                                                                     t1_from = col_date(format = "%d/%m/%Y"), 
                                                                     t1_to = col_date(format = "%d/%m/%Y")), 
-                       trim_ws = TRUE)
+                       trim_ws = TRUE, locale = locale("en"))
 
 species_choices <- spec_ind %>% 
   filter(!is.na(Batch)) %>% 
@@ -117,15 +83,31 @@ species_choices <- spec_ind %>%
 
 species_choices$Species <- str_sort(species_choices$Species)
 
+Trachemys <- c(2442941,
+               6157026,
+               6157035,
+               7062200)
+
 spec_ind <- spec_ind %>% 
-  filter(!is.na(Batch))
+  filter(!is.na(Batch)) %>% 
+  mutate(gbifapi_acceptedKey = case_when(gbifapi_acceptedKey %in% Trachemys ~ 2442941,
+                              TRUE ~ gbifapi_acceptedKey))
+
+df_ts_compact <- read_tsv("https://github.com/inbo/IAS_Species_Dashboard/raw/3_version1.0/Data/Interim/df_timeseries_redux.tsv")
 ```
 
-```{r echo=FALSE}
-selectInput(inputId = "species", label = "Species dropdown", choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
+Sidebar {.sidebar}
+==================================
+### Species dropdown
+Select a species from the dropdown
+All graphs, maps and tables will be rendered
+for the selected species.
+
+```{r Species dropdown, context="server"}
+selectInput(inputId = "species", label = NULL, choices = species_choices, selected = species_choices[1], multiple = FALSE, selectize = FALSE)
 ```
 
-```{r}
+```{r Inclusion info, context="server"}
 renderText({print("")})
 renderText({
   spec_ind_sub <- spec_ind %>% 
@@ -151,13 +133,82 @@ renderText({
 renderText({print("")})
 ```
 
+
+### Emergence evaluation period
+The emergence status for the species will
+be assessed for this period
+
+```{r eval_years slider, context="server"}
+sliderInput(inputId = "evaluation_years", label = NULL, min = minjaar, max = lubridate::year(Sys.Date()), value = c(maxjaar-2,maxjaar), step = 1, sep = "", dragRange = TRUE)
+```
+
+```{r em_status info, context="server"}
+renderText({
+  if(max(input$evaluation_years) > maxjaar){
+    print("WARNING: Due to reporting lag, it is possible the emergence status is not calculated correctly!")
+  }else{
+    print("")
+  }
+})
+
+renderText({print("")})
+
+renderText({
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey)
+  
+  em_decision_rules_occs_BE <- data.frame(taxonKey = 0, year = 0, em_status = 1, dr_1 = FALSE, dr_2 = FALSE,dr_3 = FALSE,dr_4 = FALSE)
+  
+  if(nrow(df_key) > 0){
+    for(j in input$evaluation_years){
+      temp <- apply_decision_rules(
+        df = df_key,
+        y_var = "obs",
+        eval_year = j,
+        year = "year"
+      )
+      em_decision_rules_occs_BE <- rbind(em_decision_rules_occs_BE, temp)
+    }
+  }
+  
+  em_status_code <- max(em_decision_rules_occs_BE$em_status, na.rm = TRUE)
+  
+  if(em_status_code == 0){
+    em_status <- "not emerging"
+  }
+  if(em_status_code == 1){
+    em_status <- "unclear"
+  }
+  if(em_status_code == 2){
+    em_status <- "potentially emerging"
+  }
+  if(em_status_code == 3){
+    em_status <- "emerging"
+  }
+  
+  em_status_text <- paste0("The emergence status of ", input$species, " was considered ",em_status, " in Belgium between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), ".") 
+  
+  alt_em_status_text <- paste0("The emergence status of ", input$species, " between ",  min(input$evaluation_years), " & ", max(input$evaluation_years), " cannot be assessed.") 
+  
+  if(nrow(df_key) > 0){
+    print(em_status_text)
+  }else{
+    print(alt_em_status_text)
+  }
+  
+})
+```
+
 T0 - Baseline
 ==========================================
 
 Row {data-height=50}
 ----------------------------------
 
-```{r echo=FALSE}
+```{r echo=FALSE, context="server"}
 renderText({
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -169,11 +220,14 @@ renderText({
 })
 ```
 
-Row {data-height=600}
+Row {data-height=400}
 ----------------------------------
 
-```{r}
+```{r, context="server"}
 renderLeaflet({
+  # force(basemap)
+  # force(utm_merged)
+  
   utm_t0 <- subset(utm_merged, utm_merged$tx == "t0")
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -198,41 +252,56 @@ renderLeaflet({
 })
 ```
 
-Row {data-height=200}
+Row {data-height=300}
 ----------------------------------
 
 ### Stats
 
-```{r}
-renderText({"placeholder stats"})
-renderDataTable({
+*SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
+
+```{r, context="server"}
+renderTable({
   spec_stats <- stats_merged %>% 
-    filter(gbfp_SN == input$species & tx == "t0") 
+    filter(gbfp_SN == input$species & tx == "t0") %>% 
+    select(-tx)
   
-  bioregion_test <- temp_stats %>% 
+  bioregion_test <- spec_stats %>% 
     filter(bioregion %in% bioregions) 
   
   if(nrow(bioregion_test) < 2){
-    missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
-    temp_stats <- temp_stats %>% 
-      ungroup() %>% 
-      add_row(gbfp_SN = s, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    if(nrow(bioregion_test) > 0){
+      missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
+      spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    }else{
+      for(bio in bioregions){
+        spec_stats <- spec_stats %>% 
+          ungroup() %>% 
+          add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+      }
+    }
   }
   
-  temp_stats_3 <- temp_stats  %>% 
+  temp_stats_3 <- spec_stats  %>% 
     ungroup() %>% 
     filter(!is.na(bioregion)) %>% 
     select(-gbfp_SN) %>% 
+    rename(`UTM 1x1km` = utm1,
+           `UTM 2x2km` = utm2,
+           `UTM 5x5km` = utm5,
+           `UTM 10x10km` = utm10,
+           `% UTM 1x1km squares with SACs*` = sac_perc) %>% 
     t()
   
   colnames(temp_stats_3) <- temp_stats_3[1,]
   temp_stats_3 <- temp_stats_3[-1,]
-  temp_table <- temp_stats_3 %>% 
-    kable() %>%
-    kable_styling()
-  print(temp_table)
+  temp_stats_3 <- as.data.frame(temp_stats_3) %>% 
+    rownames_to_column(var = "grid") 
+  print(temp_stats_3)
 })
 ```
+
 
 
 T1 - Report
@@ -241,7 +310,7 @@ T1 - Report
 Row {data-height=50}
 ----------------------------------
 
-```{r eval=TRUE}
+```{r eval=TRUE, context="server"}
 renderText({
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -259,8 +328,12 @@ renderText({
 Row {data-height=650}
 ----------------------------------
 
-```{r}
+```{r, context="server"}
 renderLeaflet({
+  
+  # force(basemap)
+  # force(utm_merged)
+  
   utm_t1 <- subset(utm_merged, utm_merged$tx == "t1")
   spec_ind_sub <- spec_ind %>% 
     filter(gbifapi_acceptedScientificName == input$species) %>% 
@@ -290,27 +363,316 @@ Row {data-height=350}
 
 ### Stats 
 
-```{r}
-renderText({"placeholder stats"})
+*SAC: Special Areas of Conservation comprise of areas determined under the Habitat Directive
+
+```{r, context="server"}
+renderTable({
+  spec_stats <- stats_merged %>% 
+    filter(gbfp_SN == input$species & tx == "t1") %>% 
+    select(-tx)
+  
+  bioregion_test <- spec_stats %>% 
+    filter(bioregion %in% bioregions) 
+  
+  if(nrow(bioregion_test) < 2){
+    if(nrow(bioregion_test) > 0){
+      missing_bioreg <- subset(bioregions, !grepl(pattern = bioregion_test$bioregion, bioregions))
+      spec_stats <- spec_stats %>% 
+        ungroup() %>% 
+        add_row(gbfp_SN = input$species, bioregion = missing_bioreg, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+    }else{
+      for(bio in bioregions){
+        spec_stats <- spec_stats %>% 
+          ungroup() %>% 
+          add_row(gbfp_SN = input$species, bioregion = bio, utm1 = NA, utm2 = NA, utm5 = NA, utm10 = NA, sac_perc = NA)
+      }
+    }
+  }
+  
+  temp_stats_3 <- spec_stats  %>% 
+    ungroup() %>% 
+    filter(!is.na(bioregion)) %>% 
+    select(-gbfp_SN) %>% 
+    rename(`UTM 1x1km` = utm1,
+           `UTM 2x2km` = utm2,
+           `UTM 5x5km` = utm5,
+           `UTM 10x10km` = utm10,
+           `% UTM 1x1km squares with SACs*` = sac_perc) %>% 
+    t()
+  
+  colnames(temp_stats_3) <- temp_stats_3[1,]
+  temp_stats_3 <- temp_stats_3[-1,]
+  temp_stats_3 <- as.data.frame(temp_stats_3) %>% 
+    rownames_to_column(var = "grid") 
+  print(temp_stats_3)
+})
 ```
 
-TrIAS Grafieken 
+Emergence Graphs 
 ==========================================
+
+```{r TrIAS constants, echo=FALSE, context="setup"}
+evaluation_years <- maxjaar
+```
+
+```{r include=FALSE, context="server"}
+renderPrint({
+  evaluation_years <- input$evaluation_years
+  print(evaluation_years)
+})
+```
 
 Row {data-height=50}
 ----------------------------------
 
 ### Occupancy
 
+```{r, eval=TRUE, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_occupancy <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "ncells",
+      eval_years = max(df_key$year),
+      type_indicator = "occupancy",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "occupancy (km2)"
+    ), warning = function(w){"error"})
+  }else{
+    gam_occupancy <- "empty"
+  }
+  
+  
+  if(gam_occupancy == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_occupancy == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_occupancy != "error" & gam_occupancy != "empty"){
+    print(gam_occupancy$plot)
+  }
+  
+  
+})
+
+```
+
 ### Occupancy Corrected
 
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_occupancy_cor <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "ncells",
+      baseline_var = "c_ncells",
+      eval_years = max(df_key$year),
+      type_indicator = "occupancy",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "occupancy (km2)"
+    ), warning = function(w){"error"})
+  }else{
+    gam_occupancy_cor <- "empty"
+  }
+  
+  
+  if(gam_occupancy_cor == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_occupancy_cor == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_occupancy_cor != "error" & gam_occupancy_cor != "empty"){
+    print(gam_occupancy_cor$plot)
+  }
+  
+})
+```
 
 Row {data-height=50}
 ----------------------------------
 
 ### Observations
 
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "obs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations <- "empty"
+  }
+  
+  
+  if(gam_observations == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations != "error" & gam_observations != "empty"){
+    print(gam_observations$plot)
+  }
+  
+})
+```
+
 ### Observations corrected
+
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations_cor <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "obs",
+      baseline_var = "cobs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations_cor <- "empty"
+  }
+  
+  
+  if(gam_observations_cor == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations_cor == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations_cor != "error" & gam_observations_cor != "empty"){
+    print(gam_observations_cor$plot)
+  }
+  
+})
+```
+
+Emergence Graphs - SAC's
+==========================================
+
+Emergence Graphs - SPA's
+==========================================
 
 About
 ==========================================
+
+Column {.tabset}
+-------------------------------------
+
+### T0 - Baseline
+
+### T1 - Report
+
+### Emergence Graphs
+
+-!!placeholder TrIAS link!!- 
+
+### Emergence Graphs - SAC's
+
+### Emergence Graphs - SPA's
+
+#### Basic
+
+#### Corrected
+
+### Partners
+```{r logos}
+renderImage({
+  filename <- here("Image",
+                   "Logo",
+                   "INSTvoorNatuur_eng.jpeg")
+  
+  # Return a list containing the filename and alt text
+  inbo_logo <- list(src = filename,
+                    alt = paste("INBO - Logo"))
+})
+```
