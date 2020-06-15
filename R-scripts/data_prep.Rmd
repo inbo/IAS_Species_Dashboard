@@ -281,6 +281,7 @@ writeOGR(utm_merged, here("Data", "Spatial", "utm_merged.geojson"), layer="utm_m
 
 ```{r stats}
 stats_merged <- data.frame()
+remove(temp_stats)
 
 for(t in ts){
   for(b in batches){
@@ -298,6 +299,14 @@ for(t in ts){
     }
   }
 }
+
+stats_merged <- stats_merged %>%
+        group_by(gbfp_SN, bioregion, tx) %>%
+        summarise(utm1_n = sum(utm1, na.rm = TRUE),
+                  utm2 = sum(utm2, na.rm = TRUE),
+                  utm5 = sum(utm5, na.rm = TRUE),
+                  utm10 = sum(utm10, na.rm = TRUE),
+                  sac_perc = sum((sac_perc*utm1)/utm1_n, na.rm = TRUE))
 
 write_delim(stats_merged, here("Data", "Interim", "stats_merged.csv"), ";")
 ```

@@ -1,162 +1,123 @@
-gbfp_SN;bioregion;utm1;utm2;utm5;utm10;sac_perc;tx
-Baccharis halimifolia L.;Atlantic;60;41;24;15;63.33;t0
-Cabomba caroliniana A. Gray;Atlantic;2;2;2;2;50;t0
-Callosciurus erythraeus (Pallas, 1779);Atlantic;8;5;5;3;25;t0
-Corvus splendens Vieillot, 1817;Atlantic;1;1;1;1;100;t0
-Eichhornia crassipes (Mart.) Solms;Atlantic;11;11;8;8;36.36;t0
-Eichhornia crassipes (Mart.) Solms;Continental;1;1;1;1;100;t0
-Eriocheir sinensis H. Milne Edwards, 1853;Atlantic;215;180;109;60;52.56;t0
-Eriocheir sinensis H. Milne Edwards, 1853;Continental;1;1;1;1;100;t0
-Hydrocotyle ranunculoides L. fil.;Atlantic;433;318;196;113;31.41;t0
-Hydrocotyle ranunculoides L. fil.;Continental;3;3;3;3;66.67;t0
-Lagarosiphon major (Ridl.) Moss;Atlantic;13;11;9;9;61.54;t0
-Lagarosiphon major (Ridl.) Moss;Continental;6;6;5;5;83.33;t0
-Lithobates catesbeianus (Shaw, 1802);Atlantic;100;68;45;31;61;t0
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Atlantic;171;125;95;62;46.78;t0
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Continental;7;7;6;6;71.43;t0
-Ludwigia peploides (Kunth) P. H. Raven;Atlantic;23;18;13;11;43.48;t0
-Lysichiton americanus HultÃ©n & H.St.John;Atlantic;11;10;10;8;54.55;t0
-Lysichiton americanus HultÃ©n & H.St.John;Continental;8;8;7;5;62.5;t0
-Muntiacus reevesi (Ogilby, 1839);Atlantic;27;23;18;15;22.22;t0
-Muntiacus reevesi (Ogilby, 1839);Continental;2;2;2;2;100;t0
-Myocastor coypus (Molina, 1782);Atlantic;29;24;19;16;82.76;t0
-Myocastor coypus (Molina, 1782);Continental;26;23;17;12;76.92;t0
-Myriophyllum aquaticum (Vellozo) Verdcourt;Atlantic;350;274;170;102;42.86;t0
-Myriophyllum aquaticum (Vellozo) Verdcourt;Continental;14;14;14;14;92.86;t0
-Orconectes limosus (Rafinesque, 1817);Atlantic;120;103;85;68;47.5;t0
-Orconectes limosus (Rafinesque, 1817);Continental;92;88;72;47;73.91;t0
-Oxyura jamaicensis (Gmelin, 1789);Atlantic;186;145;97;77;33.87;t0
-Oxyura jamaicensis (Gmelin, 1789);Continental;9;9;7;7;55.56;t0
-Pacifastacus leniusculus (Dana, 1852);Atlantic;11;10;8;7;45.45;t0
-Pacifastacus leniusculus (Dana, 1852);Continental;324;267;167;94;68.83;t0
-Parthenium hysterophorus L.;Atlantic;2;2;2;2;50;t0
-Procambarus clarkii (Girard, 1852);Atlantic;38;30;24;19;28.95;t0
-Procambarus clarkii (Girard, 1852);Continental;7;6;6;5;100;t0
-Procyon lotor (Linnaeus, 1758);Atlantic;30;30;28;24;36.67;t0
-Procyon lotor (Linnaeus, 1758);Continental;683;528;239;99;73.94;t0
-Pseudorasbora parva (Temminck & Schlegel, 1846);Atlantic;652;536;308;138;41.1;t0
-Pseudorasbora parva (Temminck & Schlegel, 1846);Continental;57;52;35;27;64.91;t0
-Sciurus carolinensis Gmelin, 1788;Atlantic;8;8;7;7;25;t0
-Sciurus niger Linnaeus, 1758;Atlantic;1;1;1;1;100;t0
-Tamias sibiricus (Laxmann, 1769);Atlantic;64;40;24;18;84.38;t0
-Threskiornis aethiopicus (Latham, 1790);Atlantic;169;135;99;71;40.24;t0
-Threskiornis aethiopicus (Latham, 1790);Continental;8;8;7;7;87.5;t0
-Vespa velutina Lepeletier, 1836;Atlantic;1;1;1;1;100;t0
-Ailanthus altissima (Mill.) Swingle;Atlantic;1;1;1;1;100;t0
-Alopochen aegyptiaca (Linnaeus, 1766);Atlantic;1354;792;255;95;24.22;t0
-Alopochen aegyptiaca (Linnaeus, 1766);Continental;1548;1000;402;142;51.49;t0
-Asclepias syriaca L.;Atlantic;6;6;5;3;50;t0
-Asclepias syriaca L.;Continental;3;3;3;2;100;t0
-Eichhornia crassipes (Mart.) Solms;Atlantic;1;1;1;1;100;t0
-Elodea nuttallii (Planch.) H.St.John;Atlantic;38;33;25;20;65.79;t0
-Elodea nuttallii (Planch.) H.St.John;Continental;118;108;93;68;77.12;t0
-Eriocheir sinensis H. Milne Edwards, 1853;Atlantic;4;4;4;3;50;t0
-Eriocheir sinensis H. Milne Edwards, 1853;Continental;1;1;1;1;100;t0
-Heracleum mantegazzianum Sommier & Levier;Atlantic;578;412;218;107;27.51;t0
-Heracleum mantegazzianum Sommier & Levier;Continental;991;682;321;138;52.98;t0
-Hydrocotyle ranunculoides L. fil.;Atlantic;42;32;25;21;47.62;t0
-Hydrocotyle ranunculoides L. fil.;Continental;3;3;3;3;66.67;t0
-Impatiens glandulifera Royle;Atlantic;919;572;229;99;29.92;t0
-Impatiens glandulifera Royle;Continental;1398;859;362;144;69.24;t0
-Lagarosiphon major (Ridl.) Moss;Continental;9;9;8;7;66.67;t0
-Lepomis gibbosus (Linnaeus, 1758);Atlantic;3;3;3;3;66.67;t0
-Lithobates catesbeianus (Shaw, 1802);Atlantic;9;8;7;6;55.56;t0
-Lithobates catesbeianus (Shaw, 1802);Continental;2;2;2;2;100;t0
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Atlantic;15;10;8;5;53.33;t0
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Continental;5;5;4;4;60;t0
-Ludwigia peploides (Kunth) P. H. Raven;Atlantic;15;11;7;5;60;t0
-Lysichiton americanus HultÃ©n & H.St.John;Atlantic;7;6;6;4;57.14;t0
-Lysichiton americanus HultÃ©n & H.St.John;Continental;6;6;5;4;66.67;t0
-Muntiacus reevesi (Ogilby, 1839);Atlantic;2;2;2;2;100;t0
-Muntiacus reevesi (Ogilby, 1839);Continental;2;2;2;2;100;t0
-Myocastor coypus (Molina, 1782);Atlantic;5;4;4;4;100;t0
-Myocastor coypus (Molina, 1782);Continental;21;17;13;9;71.43;t0
-Myriophyllum aquaticum (Vellozo) Verdcourt;Atlantic;23;23;22;19;47.83;t0
-Myriophyllum aquaticum (Vellozo) Verdcourt;Continental;12;12;12;12;91.67;t0
-Myriophyllum heterophyllum Michx.;Continental;2;2;2;2;100;t0
-Nasua nasua (Linnaeus, 1766);Atlantic;1;1;1;1;100;t0
-Nyctereutes procyonoides (Gray, 1834);Atlantic;18;17;16;15;44.44;t0
-Nyctereutes procyonoides (Gray, 1834);Continental;24;24;22;19;70.83;t0
-Ondatra zibethicus (Linnaeus, 1766);Atlantic;285;212;130;59;40;t0
-Ondatra zibethicus (Linnaeus, 1766);Continental;378;307;195;102;78.57;t0
-Orconectes limosus (Rafinesque, 1817);Atlantic;26;25;21;18;46.15;t0
-Orconectes limosus (Rafinesque, 1817);Continental;69;65;55;37;72.46;t0
-Oxyura jamaicensis (Gmelin, 1789);Atlantic;17;14;11;11;47.06;t0
-Oxyura jamaicensis (Gmelin, 1789);Continental;9;9;7;7;55.56;t0
-Pacifastacus leniusculus (Dana, 1852);Atlantic;7;8;6;5;42.86;t0
-Pacifastacus leniusculus (Dana, 1852);Continental;211;173;108;68;64.93;t0
-Procambarus clarkii (Girard, 1852);Atlantic;9;7;6;4;22.22;t0
-Procambarus clarkii (Girard, 1852);Continental;6;6;5;5;100;t0
-Procyon lotor (Linnaeus, 1758);Atlantic;55;55;52;44;38.18;t0
-Procyon lotor (Linnaeus, 1758);Continental;714;542;250;104;74.09;t0
-Pseudorasbora parva (Temminck & Schlegel, 1846);Atlantic;35;33;31;22;60;t0
-Pseudorasbora parva (Temminck & Schlegel, 1846);Continental;24;23;20;16;75;t0
-Sciurus niger Linnaeus, 1758;Atlantic;1;1;1;1;100;t0
-Tamias sibiricus (Laxmann, 1769);Atlantic;44;25;11;7;84.09;t0
-Threskiornis aethiopicus (Latham, 1790);Atlantic;12;11;11;10;50;t0
-Threskiornis aethiopicus (Latham, 1790);Continental;8;8;8;8;87.5;t0
-Vespa velutina Lepeletier, 1836;Atlantic;1;1;1;1;100;t0
-Acridotheres tristis Linnaeus, 1766;Atlantic;4;4;4;4;50;t0
-Ailanthus altissima (Mill.) Swingle;Atlantic;442;299;171;105;18.78;t0
-Ailanthus altissima (Mill.) Swingle;Continental;53;40;22;16;33.96;t0
-Lepomis gibbosus (Linnaeus, 1758);Atlantic;622;490;267;131;57.07;t0
-Lepomis gibbosus (Linnaeus, 1758);Continental;59;53;37;28;62.71;t0
-Nyctereutes procyonoides (Gray, 1834);Atlantic;17;17;15;13;41.18;t0
-Nyctereutes procyonoides (Gray, 1834);Continental;27;27;25;20;62.96;t0
-Salvinia auriculata Aubl.;Atlantic;1;1;1;1;100;t0
-Alopochen aegyptiaca (Linnaeus, 1766);Atlantic;895;588;231;91;26.48;t1
-Alopochen aegyptiaca (Linnaeus, 1766);Continental;1172;795;346;134;52.9;t1
-Asclepias syriaca L.;Continental;3;3;3;2;100;t1
-Baccharis halimifolia L.;Atlantic;47;37;22;17;65.96;t1
-Cabomba caroliniana A. Gray;Atlantic;2;2;2;2;100;t1
-Callosciurus erythraeus (Pallas, 1779);Atlantic;1;1;1;1;100;t1
-Eichhornia crassipes (Mart.) Solms;Atlantic;11;9;7;6;54.55;t1
-Eichhornia crassipes (Mart.) Solms;Continental;2;2;2;2;100;t1
-Elodea nuttallii (Planch.) H.St.John;Atlantic;10;9;10;8;60;t1
-Elodea nuttallii (Planch.) H.St.John;Continental;34;32;28;23;91.18;t1
-Eriocheir sinensis H. Milne Edwards, 1853;Atlantic;205;176;113;62;45.85;t1
-Eriocheir sinensis H. Milne Edwards, 1853;Continental;3;3;2;2;100;t1
-Heracleum mantegazzianum Sommier & Levier;Atlantic;255;218;156;98;29.02;t1
-Heracleum mantegazzianum Sommier & Levier;Continental;558;398;220;113;51.08;t1
-Hydrocotyle ranunculoides L. fil.;Atlantic;120;102;73;58;33.33;t1
-Hydrocotyle ranunculoides L. fil.;Continental;8;8;8;7;62.5;t1
-Impatiens glandulifera Royle;Atlantic;489;349;192;91;28.83;t1
-Impatiens glandulifera Royle;Continental;767;544;262;123;65.45;t1
-Lagarosiphon major (Ridl.) Moss;Atlantic;14;13;12;12;21.43;t1
-Lagarosiphon major (Ridl.) Moss;Continental;11;11;9;8;72.73;t1
-Lithobates catesbeianus (Shaw, 1802);Atlantic;61;46;28;18;55.74;t1
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Atlantic;107;89;69;52;57.94;t1
-Ludwigia grandiflora (Michaux) Greuter & Burdet;Continental;8;8;7;6;62.5;t1
-Ludwigia peploides (Kunth) P. H. Raven;Atlantic;6;5;5;5;16.67;t1
-Lysichiton americanus HultÃ©n & H.St.John;Atlantic;11;11;10;10;63.64;t1
-Lysichiton americanus HultÃ©n & H.St.John;Continental;12;12;10;9;50;t1
-Muntiacus reevesi (Ogilby, 1839);Atlantic;67;53;41;28;32.84;t1
-Muntiacus reevesi (Ogilby, 1839);Continental;4;4;4;4;125;t1
-Myocastor coypus (Molina, 1782);Atlantic;20;19;14;12;60;t1
-Myocastor coypus (Molina, 1782);Continental;105;81;52;34;71.43;t1
-Myriophyllum aquaticum (Vellozo) Verdcourt;Atlantic;162;138;102;69;66.05;t1
-Myriophyllum aquaticum (Vellozo) Verdcourt;Continental;14;14;13;12;71.43;t1
-Myriophyllum heterophyllum Michx.;Continental;2;2;2;2;100;t1
-Ondatra zibethicus (Linnaeus, 1766);Atlantic;211;174;120;64;36.49;t1
-Ondatra zibethicus (Linnaeus, 1766);Continental;214;186;134;82;72.43;t1
-Orconectes limosus (Rafinesque, 1817);Atlantic;69;64;56;42;36.23;t1
-Orconectes limosus (Rafinesque, 1817);Continental;28;27;23;20;85.71;t1
-Oxyura jamaicensis (Gmelin, 1789);Atlantic;83;67;45;36;26.51;t1
-Oxyura jamaicensis (Gmelin, 1789);Continental;1;1;1;1;100;t1
-Pacifastacus leniusculus (Dana, 1852);Atlantic;11;9;5;5;36.36;t1
-Pacifastacus leniusculus (Dana, 1852);Continental;147;131;86;59;83.67;t1
-Procambarus clarkii (Girard, 1852);Atlantic;59;46;32;27;22.03;t1
-Procambarus clarkii (Girard, 1852);Continental;10;6;6;5;60;t1
-Procyon lotor (Linnaeus, 1758);Atlantic;49;46;42;35;40.82;t1
-Procyon lotor (Linnaeus, 1758);Continental;1022;786;326;126;73.19;t1
-Pseudorasbora parva (Temminck & Schlegel, 1846);Atlantic;235;216;163;97;40.85;t1
-Pseudorasbora parva (Temminck & Schlegel, 1846);Continental;6;6;6;6;100;t1
-Sciurus carolinensis Gmelin, 1788;Atlantic;5;5;5;5;20;t1
-Sciurus niger Linnaeus, 1758;Atlantic;1;1;1;1;100;t1
-Tamias sibiricus (Laxmann, 1769);Atlantic;47;27;15;13;93.62;t1
-Tamias sibiricus (Laxmann, 1769);Continental;1;1;1;1;100;t1
-Threskiornis aethiopicus (Latham, 1790);Atlantic;106;87;63;51;46.23;t1
-Trachemys Agassiz, 1857;Atlantic;266;237;173;101;45.86;t1
-Trachemys Agassiz, 1857;Continental;9;9;9;6;77.78;t1
-Vespa velutina Lepeletier, 1836;Atlantic;175;152;115;82;18.86;t1
-Vespa velutina Lepeletier, 1836;Continental;19;14;10;9;36.84;t1
+gbfp_SN;bioregion;tx;utm1;utm2;utm5;utm10;sac_perc
+Acridotheres tristis Linnaeus, 1766;Atlantic;t0;4;4;4;4;50
+Ailanthus altissima (Mill.) Swingle;Atlantic;t0;443;300;172;106;18.963340857787813
+Ailanthus altissima (Mill.) Swingle;Continental;t0;53;40;22;16;33.96
+Alopochen aegyptiaca (Linnaeus, 1766);Atlantic;t0;1354;792;255;95;24.22
+Alopochen aegyptiaca (Linnaeus, 1766);Atlantic;t1;895;588;231;91;26.480000000000004
+Alopochen aegyptiaca (Linnaeus, 1766);Continental;t0;1548;1000;402;142;51.49
+Alopochen aegyptiaca (Linnaeus, 1766);Continental;t1;1172;795;346;134;52.9
+Asclepias syriaca L.;Atlantic;t0;6;6;5;3;50
+Asclepias syriaca L.;Continental;t0;3;3;3;2;100
+Asclepias syriaca L.;Continental;t1;3;3;3;2;100
+Baccharis halimifolia L.;Atlantic;t0;60;41;24;15;63.33
+Baccharis halimifolia L.;Atlantic;t1;47;37;22;17;65.96
+Cabomba caroliniana A. Gray;Atlantic;t0;2;2;2;2;50
+Cabomba caroliniana A. Gray;Atlantic;t1;2;2;2;2;100
+Callosciurus erythraeus (Pallas, 1779);Atlantic;t0;8;5;5;3;25
+Callosciurus erythraeus (Pallas, 1779);Atlantic;t1;1;1;1;1;100
+Corvus splendens Vieillot, 1817;Atlantic;t0;1;1;1;1;100
+Eichhornia crassipes (Mart.) Solms;Atlantic;t0;12;12;9;9;41.663333333333334
+Eichhornia crassipes (Mart.) Solms;Atlantic;t1;11;9;7;6;54.55
+Eichhornia crassipes (Mart.) Solms;Continental;t0;1;1;1;1;100
+Eichhornia crassipes (Mart.) Solms;Continental;t1;2;2;2;2;100
+Elodea nuttallii (Planch.) H.St.John;Atlantic;t0;38;33;25;20;65.79
+Elodea nuttallii (Planch.) H.St.John;Atlantic;t1;10;9;10;8;60
+Elodea nuttallii (Planch.) H.St.John;Continental;t0;118;108;93;68;77.12
+Elodea nuttallii (Planch.) H.St.John;Continental;t1;34;32;28;23;91.18
+Eriocheir sinensis H. Milne Edwards, 1853;Atlantic;t0;219;184;113;63;52.51324200913242
+Eriocheir sinensis H. Milne Edwards, 1853;Atlantic;t1;205;176;113;62;45.85
+Eriocheir sinensis H. Milne Edwards, 1853;Continental;t0;2;2;2;2;100
+Eriocheir sinensis H. Milne Edwards, 1853;Continental;t1;3;3;2;2;100
+Heracleum mantegazzianum Sommier & Levier;Atlantic;t0;578;412;218;107;27.51
+Heracleum mantegazzianum Sommier & Levier;Atlantic;t1;255;218;156;98;29.02
+Heracleum mantegazzianum Sommier & Levier;Continental;t0;991;682;321;138;52.98
+Heracleum mantegazzianum Sommier & Levier;Continental;t1;558;398;220;113;51.08
+Hydrocotyle ranunculoides L. fil.;Atlantic;t0;475;350;221;134;32.843305263157895
+Hydrocotyle ranunculoides L. fil.;Atlantic;t1;120;102;73;58;33.33
+Hydrocotyle ranunculoides L. fil.;Continental;t0;6;6;6;6;66.67
+Hydrocotyle ranunculoides L. fil.;Continental;t1;8;8;8;7;62.5
+Impatiens glandulifera Royle;Atlantic;t0;919;572;229;99;29.920000000000005
+Impatiens glandulifera Royle;Atlantic;t1;489;349;192;91;28.83
+Impatiens glandulifera Royle;Continental;t0;1398;859;362;144;69.24
+Impatiens glandulifera Royle;Continental;t1;767;544;262;123;65.45
+Lagarosiphon major (Ridl.) Moss;Atlantic;t0;13;11;9;9;61.54
+Lagarosiphon major (Ridl.) Moss;Atlantic;t1;14;13;12;12;21.43
+Lagarosiphon major (Ridl.) Moss;Continental;t0;15;15;13;12;73.334
+Lagarosiphon major (Ridl.) Moss;Continental;t1;11;11;9;8;72.73
+Lepomis gibbosus (Linnaeus, 1758);Atlantic;t0;625;493;270;134;57.116080000000004
+Lepomis gibbosus (Linnaeus, 1758);Continental;t0;59;53;37;28;62.71
+Lithobates catesbeianus (Shaw, 1802);Atlantic;t0;109;76;52;37;60.550825688073395
+Lithobates catesbeianus (Shaw, 1802);Atlantic;t1;61;46;28;18;55.74
+Lithobates catesbeianus (Shaw, 1802);Continental;t0;2;2;2;2;100
+Ludwigia grandiflora (Michaux) Greuter & Burdet;Atlantic;t0;186;135;103;67;47.30822580645162
+Ludwigia grandiflora (Michaux) Greuter & Burdet;Atlantic;t1;107;89;69;52;57.94
+Ludwigia grandiflora (Michaux) Greuter & Burdet;Continental;t0;12;12;10;10;66.6675
+Ludwigia grandiflora (Michaux) Greuter & Burdet;Continental;t1;8;8;7;6;62.5
+Ludwigia peploides (Kunth) P. H. Raven;Atlantic;t0;38;29;20;16;50.00105263157894
+Ludwigia peploides (Kunth) P. H. Raven;Atlantic;t1;6;5;5;5;16.67
+Lysichiton americanus HultÃ©n & H.St.John;Atlantic;t0;18;16;16;12;55.55722222222222
+Lysichiton americanus HultÃ©n & H.St.John;Atlantic;t1;11;11;10;10;63.63999999999999
+Lysichiton americanus HultÃ©n & H.St.John;Continental;t0;14;14;12;9;64.28714285714285
+Lysichiton americanus HultÃ©n & H.St.John;Continental;t1;12;12;10;9;50
+Muntiacus reevesi (Ogilby, 1839);Atlantic;t0;29;25;20;17;27.584137931034483
+Muntiacus reevesi (Ogilby, 1839);Atlantic;t1;67;53;41;28;32.84
+Muntiacus reevesi (Ogilby, 1839);Continental;t0;4;4;4;4;100
+Muntiacus reevesi (Ogilby, 1839);Continental;t1;4;4;4;4;125
+Myocastor coypus (Molina, 1782);Atlantic;t0;34;28;23;20;85.29529411764706
+Myocastor coypus (Molina, 1782);Atlantic;t1;20;19;14;12;60
+Myocastor coypus (Molina, 1782);Continental;t0;47;40;30;21;74.46702127659574
+Myocastor coypus (Molina, 1782);Continental;t1;105;81;52;34;71.43
+Myriophyllum aquaticum (Vellozo) Verdcourt;Atlantic;t0;373;297;192;121;43.16646112600536
+Myriophyllum aquaticum (Vellozo) Verdcourt;Atlantic;t1;162;138;102;69;66.05
+Myriophyllum aquaticum (Vellozo) Verdcourt;Continental;t0;26;26;26;26;92.31076923076922
+Myriophyllum aquaticum (Vellozo) Verdcourt;Continental;t1;14;14;13;12;71.43
+Myriophyllum heterophyllum Michx.;Continental;t0;2;2;2;2;100
+Myriophyllum heterophyllum Michx.;Continental;t1;2;2;2;2;100
+Nasua nasua (Linnaeus, 1766);Atlantic;t0;1;1;1;1;100
+Nyctereutes procyonoides (Gray, 1834);Atlantic;t0;35;34;31;28;42.85657142857143
+Nyctereutes procyonoides (Gray, 1834);Continental;t0;51;51;47;39;66.66352941176471
+Ondatra zibethicus (Linnaeus, 1766);Atlantic;t0;285;212;130;59;40
+Ondatra zibethicus (Linnaeus, 1766);Atlantic;t1;211;174;120;64;36.49
+Ondatra zibethicus (Linnaeus, 1766);Continental;t0;378;307;195;102;78.57
+Ondatra zibethicus (Linnaeus, 1766);Continental;t1;214;186;134;82;72.43
+Orconectes limosus (Rafinesque, 1817);Atlantic;t0;146;128;106;86;47.259589041095886
+Orconectes limosus (Rafinesque, 1817);Atlantic;t1;69;64;56;42;36.23
+Orconectes limosus (Rafinesque, 1817);Continental;t0;161;153;127;84;73.28857142857143
+Orconectes limosus (Rafinesque, 1817);Continental;t1;28;27;23;20;85.71
+Oxyura jamaicensis (Gmelin, 1789);Atlantic;t0;203;159;108;88;34.97458128078818
+Oxyura jamaicensis (Gmelin, 1789);Atlantic;t1;83;67;45;36;26.509999999999998
+Oxyura jamaicensis (Gmelin, 1789);Continental;t0;18;18;14;14;55.56
+Oxyura jamaicensis (Gmelin, 1789);Continental;t1;1;1;1;1;100
+Pacifastacus leniusculus (Dana, 1852);Atlantic;t0;18;18;14;12;44.44277777777778
+Pacifastacus leniusculus (Dana, 1852);Atlantic;t1;11;9;5;5;36.36
+Pacifastacus leniusculus (Dana, 1852);Continental;t0;535;440;275;162;67.29186915887851
+Pacifastacus leniusculus (Dana, 1852);Continental;t1;147;131;86;59;83.67
+Parthenium hysterophorus L.;Atlantic;t0;2;2;2;2;50
+Procambarus clarkii (Girard, 1852);Atlantic;t0;47;37;30;23;27.66127659574468
+Procambarus clarkii (Girard, 1852);Atlantic;t1;59;46;32;27;22.03
+Procambarus clarkii (Girard, 1852);Continental;t0;13;12;11;10;100
+Procambarus clarkii (Girard, 1852);Continental;t1;10;6;6;5;60
+Procyon lotor (Linnaeus, 1758);Atlantic;t0;85;85;80;68;37.64705882352941
+Procyon lotor (Linnaeus, 1758);Atlantic;t1;49;46;42;35;40.82
+Procyon lotor (Linnaeus, 1758);Continental;t0;1397;1070;489;203;74.01666428060129
+Procyon lotor (Linnaeus, 1758);Continental;t1;1022;786;326;126;73.19
+Pseudorasbora parva (Temminck & Schlegel, 1846);Atlantic;t0;687;569;339;160;42.06288209606987
+Pseudorasbora parva (Temminck & Schlegel, 1846);Atlantic;t1;235;216;163;97;40.85
+Pseudorasbora parva (Temminck & Schlegel, 1846);Continental;t0;81;75;55;43;67.89962962962963
+Pseudorasbora parva (Temminck & Schlegel, 1846);Continental;t1;6;6;6;6;100
+Salvinia auriculata Aubl.;Atlantic;t0;1;1;1;1;100
+Sciurus carolinensis Gmelin, 1788;Atlantic;t0;8;8;7;7;25
+Sciurus carolinensis Gmelin, 1788;Atlantic;t1;5;5;5;5;20
+Sciurus niger Linnaeus, 1758;Atlantic;t0;2;2;2;2;100
+Sciurus niger Linnaeus, 1758;Atlantic;t1;1;1;1;1;100
+Tamias sibiricus (Laxmann, 1769);Atlantic;t0;108;65;35;25;84.26185185185184
+Tamias sibiricus (Laxmann, 1769);Atlantic;t1;47;27;15;13;93.62
+Tamias sibiricus (Laxmann, 1769);Continental;t1;1;1;1;1;100
+Threskiornis aethiopicus (Latham, 1790);Atlantic;t0;181;146;110;81;40.88707182320442
+Threskiornis aethiopicus (Latham, 1790);Atlantic;t1;106;87;63;51;46.230000000000004
+Threskiornis aethiopicus (Latham, 1790);Continental;t0;16;16;15;15;87.5
+Trachemys Agassiz, 1857;Atlantic;t1;266;237;173;101;45.86
+Trachemys Agassiz, 1857;Continental;t1;9;9;9;6;77.78
+Vespa velutina Lepeletier, 1836;Atlantic;t0;2;2;2;2;100
+Vespa velutina Lepeletier, 1836;Atlantic;t1;175;152;115;82;18.86
+Vespa velutina Lepeletier, 1836;Continental;t1;19;14;10;9;36.84
