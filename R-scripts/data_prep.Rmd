@@ -306,7 +306,8 @@ stats_merged <- stats_merged %>%
                   utm2 = sum(utm2, na.rm = TRUE),
                   utm5 = sum(utm5, na.rm = TRUE),
                   utm10 = sum(utm10, na.rm = TRUE),
-                  sac_perc = sum((sac_perc*utm1)/utm1_n, na.rm = TRUE))
+                  sac_perc = sum((sac_perc*utm1)/utm1_n, na.rm = TRUE)) %>% 
+  rename(utm1 = utm1_n)
 
 write_delim(stats_merged, here("Data", "Interim", "stats_merged.csv"), ";")
 ```
