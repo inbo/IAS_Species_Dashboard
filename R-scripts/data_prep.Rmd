@@ -253,10 +253,10 @@ df_ts_sub_OeN <- df_ts_sub_OeN %>%
             cobs = sum(cobs, na.rm = TRUE),
             ncells = sum(ncells, na.rm = TRUE),
             c_ncells = sum(c_ncells, na.rm = TRUE),
-            sac_ncells = sum(sac*pa_obs),
-            spa_ncells = sum(spa*pa_obs),
-            c_sac_ncells = sum(sac*pa_cobs),
-            c_spa_ncells = sum(spa*pa_cobs),
+            sac_ncells = sum(sac_ncells),
+            spa_ncells = sum(spa_ncells),
+            c_sac_ncells = sum(c_sac_ncells),
+            c_spa_ncells = sum(c_spa_ncells),
             classKey = first(classKey))
 
 write_tsv(df_ts_sub_OeN, here("Data",
