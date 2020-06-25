@@ -9,7 +9,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-require(tidyverse)
 require(data.table)
 require(shiny)
 require(here)
@@ -23,6 +22,13 @@ require(inborutils)
 require(imager)
 require(RCurl)
 require(rsconnect)
+require(tidyverse)
+
+test <- tryCatch(library(tidyverse), warning = function(w){"error"})
+if(test == "error"){
+  library(magrittr)
+  library(tidyverse)
+}
 
 if("trias" %in% rownames(installed.packages()) == FALSE) {
   devtools::install_github("trias-project/trias")}
@@ -639,7 +645,7 @@ renderPlot({
 Emergence Graphs - SAC's
 ==========================================
 
-row
+Row {data-height=50}
 ---------------------
 
 ### Occupancy 
@@ -672,7 +678,7 @@ renderPlot({
       ggplot(aes(x = year, y = sac_ncells)) + 
       ylab("occupancy (km2)") +
       geom_point(stat = "identity") +
-      annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+      annotate("text", x = max(df_key$year), y = max(df_key$sac_ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
     print(alt_plot)
   }
   
@@ -725,7 +731,7 @@ renderPlot({
       ggplot(aes(x = year, y = sac_ncells)) + 
       ylab("occupancy (km2)") +
       geom_point(stat = "identity") +
-      annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+      annotate("text", x = max(df_key$year), y = max(df_key$sac_ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
     print(alt_plot)
   }
   
@@ -747,8 +753,329 @@ renderPlot({
 
 ```
 
+Row {data-height=50}
+----------------------------------
+
+### Observations
+
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "sac_obs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations <- "empty"
+  }
+  
+  
+  if(gam_observations == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = sac_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$sac_obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = sac_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations != "error" & gam_observations != "empty"){
+    print(gam_observations$plot)
+  }
+  
+})
+```
+
+### Observations corrected
+
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations_cor <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "sac_obs",
+      baseline_var = "sac_cobs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations_cor <- "empty"
+  }
+  
+  
+  if(gam_observations_cor == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = sac_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$sac_obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations_cor == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = sac_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations_cor != "error" & gam_observations_cor != "empty"){
+    print(gam_observations_cor$plot)
+  }
+  
+})
+```
+
 Emergence Graphs - SPA's
 ==========================================
+
+Row {data-height=50}
+---------------------
+
+### Occupancy 
+```{r, eval=TRUE, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_occupancy <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "spa_ncells",
+      eval_years = max(df_key$year),
+      type_indicator = "occupancy",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "occupancy (km2)"
+    ), warning = function(w){"error"})
+  }else{
+    gam_occupancy <- "empty"
+  }
+  
+  
+  if(gam_occupancy == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = spa_ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$spa_ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_occupancy == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = spa_ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_occupancy != "error" & gam_occupancy != "empty"){
+    print(gam_occupancy$plot)
+  }
+  
+  
+})
+
+```
+
+### Occupancy - corrected
+```{r, eval=TRUE, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_occupancy <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "spa_ncells",
+      eval_years = max(df_key$year),
+      type_indicator = "occupancy",
+      baseline_var = "c_spa_ncells",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "occupancy (km2)"
+    ), warning = function(w){"error"})
+  }else{
+    gam_occupancy <- "empty"
+  }
+  
+  
+  if(gam_occupancy == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = spa_ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$spa_ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_occupancy == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = spa_ncells)) + 
+      ylab("occupancy (km2)") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_occupancy != "error" & gam_occupancy != "empty"){
+    print(gam_occupancy$plot)
+  }
+  
+  
+})
+
+```
+
+Row {data-height=50}
+----------------------------------
+
+### Observations
+
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "spa_obs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations <- "empty"
+  }
+  
+  
+  if(gam_observations == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = spa_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$spa_obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = spa_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations != "error" & gam_observations != "empty"){
+    print(gam_observations$plot)
+  }
+  
+})
+```
+
+### Observations corrected
+
+```{r, context="server"}
+renderPlot({
+  
+  spec_ind_sub <- spec_ind %>% 
+    filter(gbifapi_acceptedScientificName == input$species)
+  
+  df_key <- df_ts_compact %>% 
+    filter(taxonKey %in% spec_ind_sub$gbifapi_acceptedKey & year <= maxjaar)
+  
+  if(nrow(df_key) > 0){
+    gam_observations_cor <- tryCatch(apply_gam(
+      df = df_key,
+      y_var = "spa_obs",
+      baseline_var = "spa_cobs",
+      eval_years = max(df_key$year),
+      type_indicator = "observations",
+      verbose = TRUE,
+      saveplot = FALSE,
+      y_label = "observations"
+    ), warning = function(w){"error"})
+  }else{
+    gam_observations_cor <- "empty"
+  }
+  
+  
+  if(gam_observations_cor == "error"){
+    alt_plot <- df_key %>% 
+      ggplot(aes(x = year, y = spa_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = max(df_key$year), y = max(df_key$spa_obs), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot)
+  }
+  
+  if(gam_observations_cor == "empty"){
+    alt_plot_2 <- df_key %>% 
+      ggplot(aes(x = year, y = spa_obs)) + 
+      ylab("observations") +
+      geom_point(stat = "identity") +
+      annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
+    print(alt_plot_2)
+  }
+  
+  if(gam_observations_cor != "error" & gam_observations_cor != "empty"){
+    print(gam_observations_cor$plot)
+  }
+  
+})
+```
+
 
 About
 ==========================================
