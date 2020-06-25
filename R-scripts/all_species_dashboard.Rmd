@@ -722,7 +722,7 @@ renderPlot({
   
   if(gam_occupancy == "error"){
     alt_plot <- df_key %>% 
-      ggplot(aes(x = year, y = ncells)) + 
+      ggplot(aes(x = year, y = sac_ncells)) + 
       ylab("occupancy (km2)") +
       geom_point(stat = "identity") +
       annotate("text", x = max(df_key$year), y = max(df_key$ncells), label = paste0("The emergence status of \n", input$species, " \n cannot be assessed."),vjust = "inward", hjust = "inward", colour = "red")
@@ -731,7 +731,7 @@ renderPlot({
   
   if(gam_occupancy == "empty"){
     alt_plot_2 <- df_key %>% 
-      ggplot(aes(x = year, y = ncells)) + 
+      ggplot(aes(x = year, y = sac_ncells)) + 
       ylab("occupancy (km2)") +
       geom_point(stat = "identity") +
       annotate("text", x = maxjaar, y = 1, label = paste0(input$species, " \n is not yet present \n in Belgium"),vjust = "inward", hjust = "inward", colour = "red")
