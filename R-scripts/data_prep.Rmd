@@ -7,8 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
 library(here)
+
+test <- tryCatch(library(tidyverse), warning = function(w){"error"})
+if(test == "error"){
+  library(magrittr)
+  library(tidyverse)
+}
 ```
 
 ```{r general}
@@ -82,14 +87,18 @@ df_ts_sub <- df_ts %>%
   filter(taxonKey %in% species_choices$gbifapi_acceptedKey) %>%
   group_by(taxonKey, year, classKey) %>%
   summarise(
-    obs = sum(obs),
-    cobs = sum(cobs),
-    ncells = sum(pa_obs),
-    c_ncells = sum(pa_cobs),
-    sac_ncells = sum(sac*pa_obs),
-    spa_ncells = sum(spa*pa_obs),
-    c_sac_ncells = sum(sac*pa_cobs),
-    c_spa_ncells = sum(spa*pa_cobs)
+    obs = sum(obs, na.rm = TRUE),
+    cobs = sum(cobs, na.rm = TRUE),
+    sac_obs = sum(obs*sac, na.rm = TRUE),
+    sac_cobs = sum(cobs*sac, na.rm = TRUE),
+    spa_obs = sum(obs*spa, na.rm = TRUE),
+    spa_cobs = sum(cobs*spa, na.rm = TRUE),
+    ncells = sum(pa_obs, na.rm = TRUE),
+    c_ncells = sum(pa_cobs, na.rm = TRUE),
+    sac_ncells = sum(sac*pa_obs, na.rm = TRUE),
+    spa_ncells = sum(spa*pa_obs, na.rm = TRUE),
+    c_sac_ncells = sum(sac*pa_cobs, na.rm = TRUE),
+    c_spa_ncells = sum(spa*pa_cobs, na.rm = TRUE)
   ) %>%
   ungroup()
 
@@ -161,10 +170,13 @@ kingdom_class <- map_df(
 ) %>%
   select(classKey, class, kingdomKey, kingdom)
 
+table(kingdom_class$kingdomKey)
+table(spec_names$kingdomKey)
+
 spec_names <-
   spec_names %>%
-  left_join(kingdom_class, by = c("kingdomKey", "classKey")) %>%
-  filter(is.na(classKey))
+  full_join(kingdom_class, by = c("kingdomKey", "classKey")) %>% 
+  filter(!is.na(classKey))
 
 # make timeseries
 df_cc <- 
@@ -200,7 +212,7 @@ df_ts_old <-
 # add membership to protected areas
 df_ts_old <- 
   df_ts_old %>%
-  left_join(df_prot_areas %>% select(CELLCODE, natura2000),
+  left_join(df_prot_areas,
             by = c("eea_cell_code" = "CELLCODE"))
 # add classKey
 df_ts_old <- 
@@ -214,8 +226,12 @@ df_ts_old <-
   df_ts_old %>%
   left_join(df_bl_old %>%
               select(year, eea_cell_code, classKey, cobs),
-            by = c("year", "eea_cell_code", "classKey")) %>%
+            by = c("year", "eea_cell_code", "classKey"))  %>% 
   mutate(cobs = cobs - obs) 
+
+names(df_ts_old)
+summary(df_ts_old$cobs)
+summary(df_ts_old$obs)
 
 df_ts_old <- 
   df_ts_old %>%
@@ -224,17 +240,20 @@ df_ts_old <-
          pa_obs = if_else(obs > 0, 1, 0))
 
 df_ts_old_sub <- df_ts_old %>% 
-  left_join(df_prot_areas, by=c("eea_cell_code"="CELLCODE")) %>%
   group_by(taxonKey, year, classKey) %>%
   summarise(
-    obs = sum(obs),
-    cobs = sum(cobs),
-    ncells = sum(pa_obs),
-    c_ncells = sum(pa_cobs),
-    sac_ncells = sum(sac*pa_obs),
-    spa_ncells = sum(spa*pa_obs),
-    c_sac_ncells = sum(sac*pa_cobs),
-    c_spa_ncells = sum(spa*pa_cobs),
+    obs = sum(obs, na.rm = TRUE),
+    cobs = sum(cobs, na.rm = TRUE),
+    ncells = sum(pa_obs, na.rm = TRUE),
+    c_ncells = sum(pa_cobs, na.rm = TRUE),
+    sac_obs = sum(obs*sac, na.rm = TRUE),
+    sac_cobs = sum(cobs*sac, na.rm = TRUE),
+    spa_obs = sum(obs*spa, na.rm = TRUE),
+    spa_cobs = sum(cobs*spa, na.rm = TRUE),
+    sac_ncells = sum(sac*pa_obs, na.rm = TRUE),
+    spa_ncells = sum(spa*pa_obs, na.rm = TRUE),
+    c_sac_ncells = sum(sac*pa_cobs, na.rm = TRUE),
+    c_spa_ncells = sum(spa*pa_cobs, na.rm = TRUE),
   ) %>%
   ungroup()
 
@@ -251,6 +270,10 @@ df_ts_sub_OeN <- df_ts_sub_OeN %>%
   group_by(taxonKey, year) %>% 
   summarise(obs = sum(obs, na.rm = TRUE),
             cobs = sum(cobs, na.rm = TRUE),
+            sac_obs = sum(sac_obs, na.rm = TRUE),
+            sac_cobs = sum(sac_cobs, na.rm = TRUE),
+            spa_obs = sum(spa_obs, na.rm = TRUE),
+            spa_cobs = sum(spa_cobs, na.rm = TRUE),
             ncells = sum(ncells, na.rm = TRUE),
             c_ncells = sum(c_ncells, na.rm = TRUE),
             sac_ncells = sum(sac_ncells),
