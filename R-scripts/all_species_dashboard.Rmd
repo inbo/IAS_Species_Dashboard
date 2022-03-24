@@ -1,5 +1,6 @@
 ---
 title: "All_Species_Dashboard"
+author: "Sander Devisscher"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
